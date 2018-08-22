@@ -1866,9 +1866,9 @@ Function fEnableOrDisableExcelOptionsAll(bValue As Boolean)
 '    ThisWorkbook.CheckCompatibility = bValue
     
     If bValue Then
-        If Application.CutCopyMode = 0 Then Application.Calculation = xlCalculationAutomatic
+        If Application.CutCopyMode = 0 And Workbooks.Count > 0 Then Application.Calculation = xlCalculationAutomatic
     Else
-        If Application.CutCopyMode = 0 Then Application.Calculation = xlCalculationManual
+        If Application.CutCopyMode = 0 And Workbooks.Count > 0 Then Application.Calculation = xlCalculationManual
     End If
     
     Application.EnableEvents = bValue

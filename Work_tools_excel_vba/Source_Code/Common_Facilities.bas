@@ -116,6 +116,8 @@ Sub Sub_ListActiveXControlOnActiveSheet()
     Dim obj As Object
     Dim sStr As String
     
+    If Workbooks.Count <= 0 Then Exit Sub
+    
     For Each obj In ActiveSheet.DrawingObjects
         sStr = sStr & vbCr & obj.Name
     Next

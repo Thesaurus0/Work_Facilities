@@ -8013,51 +8013,6 @@ Function fSetFocus(controlOnForm)
     controlOnForm.SetFocus
 End Function
 
-Function fSelectFileDialog(Optional asDefaultFilePath As String = "" _
-                         , Optional asFileFilters As String = "", Optional asTitle As String = "") As String
-    'asFileFilters :   "Excel File=*.xlsx;*.xls;*.xls*"
-    'asFileFilters :   "Excel File(*.xlsx),*.xlsx, "Text File(*.txt),*.txt, Visual Basic Files(*.bas;*.txt),*.bas;*.txt "
-    Dim fd As FileDialog
-    Dim sFilterDesc As String
-    Dim sFilterStr As String
-    Dim sDefaultFile As String
-
-    If Len(Trim(asFileFilters)) > 0 Then
-        sFilterDesc = Trim(Split(asFileFilters, "=")(0))
-        sFilterStr = Trim(Split(asFileFilters, "=")(1))
-    End If
-
-    If Len(Trim(asDefaultFilePath)) > 0 Then
-       ' sDefaultFile = fGetFileParentFolder(asDefaultFilePath)
-        sDefaultFile = asDefaultFilePath
-    Else
-        sDefaultFile = ThisWorkbook.Path
-    End If
-
-    Set fd = Application.FileDialog(msoFileDialogFilePicker)
-
-    fd.InitialFileName = sDefaultFile
-    fd.Title = IIf(Len(asTitle) > 0, asTitle, fd.InitialFileName)
-    fd.AllowMultiSelect = False
-
-    If Len(Trim(sFilterStr)) > 0 Then
-        fd.Filters.Clear
-        fd.Filters.Add sFilterDesc, sFilterStr, 1
-        fd.FilterIndex = 1
-        fd.InitialView = msoFileDialogViewDetails
-    Else
-        If fd.Filters.Count > 0 Then fd.Filters.Delete
-    End If
-
-    If fd.Show = -1 Then
-        fSelectFileDialog = fd.SelectedItems(1)
-    Else
-        fSelectFileDialog = ""
-    End If
-
-    Set fd = Nothing
-End Function
-
 Function fFilesUserInputCheck(tbTarget As MSForms.TextBox, Optional msgTextName As String) As Boolean
     fFilesUserInputCheck = False
 
@@ -8296,4 +8251,49 @@ Function fSelectSaveAsFileDialog(Optional asDeafaulfFilePath As String = "", Opt
     Loop
 
     fSelectSaveAsFileDialog = CStr(sOut)
+End Function
+
+Function fSelectFileDialog(Optional asDefaultFilePath As String = "" _
+                         , Optional asFileFilters As String = "", Optional asTitle As String = "") As String
+    'asFileFilters :   "Excel File=*.xlsx;*.xls;*.xls*"
+    'asFileFilters :   "Excel File(*.xlsx),*.xlsx, "Text File(*.txt),*.txt, Visual Basic Files(*.bas;*.txt),*.bas;*.txt "
+    Dim fd As FileDialog
+    Dim sFilterDesc As String
+    Dim sFilterStr As String
+    Dim sDefaultFile As String
+
+    If Len(Trim(asFileFilters)) > 0 Then
+        sFilterDesc = Trim(Split(asFileFilters, "=")(0))
+        sFilterStr = Trim(Split(asFileFilters, "=")(1))
+    End If
+
+    If Len(Trim(asDefaultFilePath)) > 0 Then
+       ' sDefaultFile = fGetFileParentFolder(asDefaultFilePath)
+        sDefaultFile = asDefaultFilePath
+    Else
+        sDefaultFile = ThisWorkbook.Path
+    End If
+
+    Set fd = Application.FileDialog(msoFileDialogFilePicker)
+
+    fd.InitialFileName = sDefaultFile
+    fd.Title = IIf(Len(asTitle) > 0, asTitle, fd.InitialFileName)
+    fd.AllowMultiSelect = False
+
+    If Len(Trim(sFilterStr)) > 0 Then
+        fd.Filters.Clear
+        fd.Filters.Add sFilterDesc, sFilterStr, 1
+        fd.FilterIndex = 1
+        fd.InitialView = msoFileDialogViewDetails
+    Else
+        If fd.Filters.Count > 0 Then fd.Filters.Delete
+    End If
+
+    If fd.Show = -1 Then
+        fSelectFileDialog = fd.SelectedItems(1)
+    Else
+        fSelectFileDialog = ""
+    End If
+
+    Set fd = Nothing
 End Function
