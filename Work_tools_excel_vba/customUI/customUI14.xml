@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Excel_Utility_Onload">
+<!--
+	<commands>
+		<command idMso="FileSaveAs" enabled="false" />
+	</commands>
+	-->
+	<ribbon startFromScratch="false">
+		<tabs>
+			<tab id="ExcelCommonTool_20180701" label="Excel Utility">
+				<group id="grpNavigator" label="Back/Forward">
+					<button id="btnBack" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+					<button id="btnForward" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<!--
+					<box id="boxNavigator" boxStyle="horizontal">
+					</box>
+					-->
+				</group> 
+				<group id="grpOpenFolderExcelAt" label="Open Location">
+					<button id="btnOpenFileLocation" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+					<button id="btnFileFullPath" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+				</group> 
+				<group id="grpFileterSort" label="Filter/Sort">
+					<button id="btnFilterBySelected" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+					<button idMso="AutoFilterClassic" label="Auto Filter One By One" size="normal"/>
+					<button id="btnRemoveFilter" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+					<button id="btnSortSheetBySelected" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+				</group> 
+				<group id="grpGenList" label="Gen List">
+					<button id="btnGenAlphabetList" label="Gen A…XFD" size="normal" imageMso="A" onAction="btnGenAlphabetList_onAction"  />
+					<button id="btnGenNumberList" label="Gen 1…9999" size="normal" imageMso="_1" onAction="btnGenNumberList_onAction"  />
+				</group> 
+			</tab>
+			<tab id="tabForDev_20180701" label="Dev Tools">
+				<group id="grpSheetOpr" label="Sheet Operation"> 
+					<button id="btnShowAllVeryHideSheets" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+				</group>
+				
+				<group id="grpSourceCode" label="Source Code"> 
+					<button id="btnExportSourceCode" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnValidateLocalSourceCodeFile" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+					<button id="btnValidateMacroWithLocal" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+				</group>
+				<group id="grpSourceCode02" label="Compare"> 
+					<button id="btnListAllFunctions" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnCompareTwoMacros" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnListAllFunctionsInLocalFile" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+				</group>
+				<group id="grpListAllSheetName" label="Sheets"> 
+					<button id="btnListAllSheetName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnListAllSheetCodeName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+				</group>
+				
+				<group id="grpMisc" label="Misc"> 
+					<button id="btnResetOnError" label="Rest On Error" size="normal" imageMso="ControlToolboxOutlook" onAction="btnResetOnError_onAction" />
+					<button id="btnListAllActiveXOnCurrSheet" label="List ActiveX On Sheet" size="normal" imageMso="ModuleInsert" onAction="btnListAllActiveXOnCurrSheet_onAction"  />
+					<button id="btnExportSourceCodeThisAddIn" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+				</group> 
+			</tab>
+		</tabs>
+	</ribbon>
+<!--
+	<backstage>
+		<button id="MyCustomButton1" label="My Macro" imageMso="HappyFace" isDefinitive="true" onAction="Macro1"/>
+
+		<button idMso="FileSave" visible="true"/>
+		<button idMso="FileSaveAs" visible="true"/>
+		<button idMso="FileOpen" visible="true"/>
+		<button idMso="FileClose" visible="true"/>
+		<button idMso="ApplicationOptionsDialog" visible="true" enabled="false"/>
+		<button idMso="FileExit" visible="true"/>
+		<button idMso="HistoryTab" visible="true" enabled="false"/>
+		<button idMso="OfficeFeedback" visible="true" enabled="false"/>
+		<tab idMso="TabRecent"  enabled="false"/>
+		<tab idMso="TabNew"  enabled="false"/>
+		<tab idMso="TabPrint" visible="true"/>
+		<tab idMso="TabShare"   enabled="false"/>
+		<tab idMso="TabHelp"  enabled="false"/>
+		<tab idMso="TabPublish"   enabled="false"/>
+		<tab idMso="TabSave" visible="true"/>
+		<tab idMso="TabOfficeStart"   enabled="false"/>
+		<tab idMso="Publish2Tab"  visible="false"/>
+		<tab idMso="TabOfficeFeedback"   enabled="false"/>
+		<tab idMso="TabInfo" enabled="false"/>
+
+		<tab id="dynamicFormatTab" label="Dynamic Control Format" insertAfterMso="TabInfo">
+			<firstColumn>
+				<group id="workStatusGroup" label="Work Status" getHelperText="GetWorkStatusHelperText" getStyle="GetWorkStatusStyle" >
+					<primaryItem>
+						<button id="sendStatusMailButton" label="Send Status E-Mail" imageMso="ReplyAll" />
+					</primaryItem>
+				</group>
+			</firstColumn>
+		</tab>
+		<button id="saveAndCloseButton" label="Save &amp;&amp; Close" insertAfterMso="FileSaveAs" imageMso="SourceControlCheckIn" onAction="SaveAndClose" isDefinitive="true" />
+
+	</backstage>
+-->
+</customUI>
