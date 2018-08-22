@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>static</Title>
+			<Shortcut>static</Shortcut>
+			<Description>Code snippet for public static method</Description>
+			<Author>Richard</Author>
+			<SnippetTypes>
+				<SnippetType>Expansion</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+				<Literal Editable="true">
+					<ID>MethodName</ID>
+					<ToolTip>Method Name</ToolTip>
+					<Default>MethodName</Default>
+				</Literal>
+				<Literal Editable="true">
+					<ID>ReturnType</ID>
+					<Default>ReturnType</Default>
+				</Literal>
+				<Literal Editable="true">
+					<ID>ReturnObj</ID>
+					<Default>ReturnObj</Default>
+				</Literal>
+				<Literal Editable="true">
+					<ID>ParamType1</ID>
+					<Default>ParamType1</Default>
+				</Literal>
+				<Literal Editable="true">
+					<ID>ParamType2</ID>
+					<Default>ParamType2</Default>
+				</Literal>
+				<Literal Editable="true">
+					<ID>ParamObj1</ID>
+					<Default>ParamObj1</Default>
+				</Literal>
+				<Literal Editable="true">
+					<ID>ParamObj2</ID>
+					<Default>ParamObj2</Default>
+				</Literal>
+			</Declarations>
+			<Code Language="csharp">
+				<![CDATA[
+				public static $ReturnType$ $MethodName$($ParamType1$ $ParamObj1$, $ParamType2$ $ParamObj2$ = null)
+        {
+            $ReturnType$ $ReturnObj$ = null;
+			
+			$end$
+			
+            return $ReturnObj$;
+        }
+        		]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>
