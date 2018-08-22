@@ -494,22 +494,38 @@ Function fGetSheetByCodeName(asShtCodeName As String, Optional wb As Workbook) A
     Set shtOut = Nothing
     Set sht = Nothing
 End Function
-Function fExcelFileOpenedToCloseIt(sExcelFileFullPath As String)
-    Dim wbTemp As Workbook
+Function fExcelFileOpenedToCloseIt(sExcelFileFullPath As String, Optional wbOut As Workbook _
+                            , Optional bRaiseErrIfOpened As Boolean = True _
+                            , Optional bActiveItIfAlreadyOpened As Boolean = True) As Boolean
+    Dim bIsOpenAlready As Boolean
+    Dim sFileBaseName As String
     
-    If fExcelFileIsOpen(sExcelFileFullPath, wbTemp) Then
-        fGetFSO
+    bIsOpenAlready = fExcelFileIsOpen(sExcelFileFullPath, wbOut)
+    
+    If bIsOpenAlready Then
+        If bActiveItIfAlreadyOpened Then wbOut.Activate
+        'fGetFSO
         'sExcelFileFullPath = gFSO.GetFile(sExcelFileFullPath).Path
-        sExcelFileFullPath = fCheckPath(sExcelFileFullPath)
+        sFileBaseName = fGetFileBaseName(sExcelFileFullPath)
     
-        If UCase(wbTemp.FullName) = UCase(sExcelFileFullPath) Then
-            fErr "Excel File is open, pleae close it first." & vbCr & fGetFileBaseName(sExcelFileFullPath)
+        If UCase(wbOut.FullName) = UCase(sExcelFileFullPath) Then
+            If bRaiseErrIfOpened Then
+                fErr "Excel File is open, pleae close it first." & vbCr & sExcelFileFullPath
+            Else
+                MsgBox "Excel File is open, pleae close it first." & vbCr & sExcelFileFullPath, vbExclamation
+            End If
         Else
-            fErr "Another file with the same name """ & fGetFileBaseName(sExcelFileFullPath) & """ is open, please close it first."
+            Set wbOut = Nothing
+            
+            If bRaiseErrIfOpened Then
+                fErr "Another file with the same name """ & sExcelFileFullPath & """ is open, please close it first."
+            Else
+                MsgBox "Another file with the same name """ & sExcelFileFullPath & """ is open, please close it first.", vbExclamation
+            End If
         End If
     End If
     
-    Set wbTemp = Nothing
+    fExcelFileOpenedToCloseIt = bIsOpenAlready
 End Function
  
 Function fSortDataInSheetSortSheetData(sht As Worksheet, arrSortByCols, Optional arrAscend)

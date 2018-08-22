@@ -327,7 +327,8 @@ Function fErr(Optional sMsg As String = "") As VbMsgBoxResult
     gErrNum = vbObjectError + CONFIG_ERROR_NUMBER
     'gbBusinessError = True
     gErrMsg = sMsg
-    If fNzero(sMsg) Then fMsgBox "Error: " & vbCr & vbCr & sMsg, vbCritical
+    'If fNzero(sMsg) Then fMsgBox "Error: " & vbCr & vbCr & sMsg, vbCritical
+    If fNzero(sMsg) Then fMsgBox sMsg, vbCritical
     
     Err.Raise gErrNum, "", "Program is to be terminated."
 End Function
@@ -396,20 +397,19 @@ Function fSelectSaveAsFileDialog(Optional asDeafaulfFilePath As String = "", Opt
 'asFileFilters  :
 '       "Excel File(*.xlsx),*.xlsx, Excel Old Ver(*.xls),*.xls"
 'return value:
-'   blank: 1. user clicked cancel 2. the selected file is already open
+'   blank: 1. user clicked cancel
+'          2. the selected file is already open
 ' Important: the file extension of the default file name must be same as the first file filter extension, otherwise the defaulf file name will not be shownup
 '   default_file.xlsx  = "Excel File(*.xlsx),*.xlsx"
     Dim fd As FileDialog
     Dim sDefaultFolder As String
-    Dim sDefaultFile As String
+    Dim sDefaultFileName As String
     Dim sOut 'As String
     Dim response As VbMsgBoxResult
     
-    'fGetFSO
-    
     If Len(Trim(asDeafaulfFilePath)) > 0 Then
         sDefaultFolder = fGetFileParentFolder(asDeafaulfFilePath)
-        sDefaultFile = fGetFileBaseName(asDeafaulfFilePath)
+        sDefaultFileName = fGetFileBaseName(asDeafaulfFilePath)
         
         If Not fFolderExists(sDefaultFolder) Then sDefaultFolder = ThisWorkbook.Path
     Else
@@ -421,11 +421,49 @@ Function fSelectSaveAsFileDialog(Optional asDeafaulfFilePath As String = "", Opt
     fGetFSO
     ChDrive gFSO.GetDriveName(sDefaultFolder)
     ChDir sDefaultFolder
-    sOut = Application.GetSaveAsFilename(InitialFileName:=sDefaultFile _
+    
+    If Len(Trim(asFileFilters)) > 0 And Len(Trim(sDefaultFileName)) > 0 Then
+        Dim sFirstFilterExt As String
+        sFirstFilterExt = Trim(Split(asFileFilters, ",")(1))
+        
+        If UCase(fGetFileExtension(sDefaultFileName)) <> UCase(Trim(Split(sFirstFilterExt, ".")(1))) Then
+            MsgBox "Warning: the file extension is not same as the first filter extension, which will cause the default to be blank." _
+               & vbCr & "so it is advisable to provide the first filter extension be same as the file extension" _
+               & vbCr & vbCr & "File name supplied: " & sDefaultFileName _
+               & vbCr & "Filters: " & asFileFilters, vbExclamation
+        End If
+    End If
+    
+    Do While True
+        sOut = Application.GetSaveAsFilename(InitialFileName:=sDefaultFileName _
                         , filefilter:=asFileFilters _
-                        , Title:=IIf(Len(Trim(asTitle)) > 0, asTitle, sDefaultFile))
-    If sOut = False Then sOut = ""
-    fSelectSaveAsFileDialog = sOut
+                        , Title:=IIf(Len(Trim(asTitle)) > 0, asTitle, sDefaultFileName))
+        If sOut = False Then
+            sOut = ""
+            Exit Do
+        Else
+            If fFileExists(CStr(sOut)) Then
+                response = MsgBox("The file you speicified to save already exists, do you want to overwrite it?", vbYesNoCancel + vbCritical + vbDefaultButton2)
+                If response = vbYes Then
+                    If fExcelFileOpenedToCloseIt(CStr(sOut)) Then
+                        sOut = ""
+                        Exit Do
+                    Else
+                        Exit Do
+                    End If
+                ElseIf response = vbNo Then
+                    'to show the dialog again
+                Else
+                    sOut = ""
+                    Exit Do
+                End If
+            Else
+                Exit Do
+            End If
+        End If
+    Loop
+    
+    fSelectSaveAsFileDialog = CStr(sOut)
 End Function
 'Sub Test()
 '    Dim i As Integer

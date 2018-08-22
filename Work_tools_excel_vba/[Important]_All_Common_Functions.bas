@@ -579,15 +579,6 @@ Function fRangeIsSingleCell(rngParam As Range) As Boolean
     fRangeIsSingleCell = (rngParam.Rows.Count = 1 And rngParam.Columns.Count = 1)
 End Function
 
-Function fErr(Optional sMsg As String = "") As VbMsgBoxResult
-    gErrNum = vbObjectError + BUSINESS_ERROR_NUMBER
-    'gbBusinessError = True
-    gErrMsg = sMsg
-    If fNzero(sMsg) Then fMsgBox sMsg, vbCritical
-
-    Err.Raise gErrNum, "", "Program is to be terminated."
-End Function
-
 Function fErrBuzz(Optional sMsg As String = "") As VbMsgBoxResult
     gErrNum = vbObjectError + BUSINESS_ERROR_NUMBER
     'gbBusinessError = True
@@ -599,69 +590,6 @@ End Function
 Function fMsgBox(Optional sMsg As String = "", Optional aVbMsgBoxStyle As VbMsgBoxStyle = vbCritical) As VbMsgBoxResult
     fMsgBox = MsgBox(sMsg, aVbMsgBoxStyle)
 End Function
-
-Function fSelectSaveAsFileDialog(Optional asDeafaulfFilePath As String = "", Optional asFileFilters = "", Optional asTitle = "") As String
-'asFileFilters  : "Excel File(*.xlsx),*.xlsx, Excel Old Ver(*.xls),*.xls"
-' Important: the default file name must be same as the file filter extension
-'   default_file.xlsx  = "Excel File(*.xlsx),*.xlsx"
-    Dim fd As FileDialog
-    Dim sDefaultFolder As String
-    Dim sDefaultFile As String
-    Dim sOut 'As String
-
-    fGetFSO
-
-    If Len(Trim(asDeafaulfFilePath)) > 0 Then
-        sDefaultFolder = fGetFileParentFolder(asDeafaulfFilePath)
-        sDefaultFile = fGetFileBaseName(asDeafaulfFilePath)
-
-        If Not gFSO.FolderExists(sDefaultFolder) Then sDefaultFolder = ThisWorkbook.Path
-    Else
-        sDefaultFolder = ThisWorkbook.Path
-    End If
-
-    sDefaultFolder = fCheckPath(sDefaultFolder)
-
-    ChDrive gFSO.GetDriveName(sDefaultFolder)
-    ChDir sDefaultFolder
-    sOut = Application.GetSaveAsFilename(InitialFileName:=sDefaultFile _
-                        , filefilter:=asFileFilters _
-                        , Title:=IIf(Len(Trim(asTitle)) > 0, asTitle, sDefaultFile))
-    If sOut = False Then sOut = ""
-    fSelectSaveAsFileDialog = sOut
-End Function
-'Sub Test()
-'    Dim i As Integer
-'    Dim intChoice
-'    Dim fd As FileDialog
-'    Dim strPath
-'
-'    Set fd = Application.FileDialog(msoFileDialogSaveAs)
-'
-'    With fd
-'        For i = 1 To .Filters.Count
-'            If .Filters(i).Extensions = "*.xlsx" Then Exit For
-'        Next
-'
-'        .FilterIndex = i
-'        intChoice = .Show
-'
-'        If intChoice <> 0 Then
-'            strPath = Application.FileDialog(msoFileDialogSaveAs).SelectedItems(1)
-'
-'            ThisWorkbook.SaveAs Filename:=strPath
-'        End If
-'    End With
-'End Sub
-'
-'Sub aaa()
-'        With Application.FileDialog(msoFileDialogSaveAs)
-''        .Filters.Clear
-''        .Filters.Add "Excel File", "*.xls"
-''        .Filters.Add "All File", "*.*"
-'        .Show
-'    End With
-'End Sub
 
 Function fGetFileParentFolder(asFileFullPath As String) As String
     fGetFSO
@@ -3945,14 +3873,6 @@ Function fFreezeSheet(sht As Worksheet, Optional alSplitCol As Long = 0, Optiona
     ActiveWindow.SplitColumn = alSplitCol
     ActiveWindow.SplitRow = alSplitRow
     ActiveWindow.FreezePanes = True
-End Function
-
-Function fExcelFileIsOpen(sExcelFileName As String, Optional wbOut As Workbook) As Boolean
-    On Error Resume Next
-    Set wbOut = Workbooks(fGetFileBaseName(sExcelFileName))
-    Err.Clear
-
-    fExcelFileIsOpen = (Not wbOut Is Nothing)
 End Function
 
 Function fRemoveFilterForAllSheets(Optional wb As Workbook, Optional ByVal asDegree As String = "SHOW_ALL_DATA")
@@ -8230,4 +8150,150 @@ Function fSetRowHeightForExceedingThreshold(sht As Worksheet, lStartRow As Long,
 
     Set rgAll = Nothing
     Set rgTarget = Nothing
+End Function
+
+Function fExcelFileIsOpen(sExcelFileName As String, Optional wbOut As Workbook) As Boolean
+    On Error Resume Next
+    Set wbOut = Workbooks(fGetFileBaseName(sExcelFileName))
+    Err.Clear
+
+    fExcelFileIsOpen = (Not wbOut Is Nothing)
+End Function
+Function fExactExcelFileIsopen(sExcelFileName As String, Optional wbOut As Workbook) As Boolean
+    Dim bOut As Boolean
+
+    bOut = False
+
+    On Error Resume Next
+    Set wbOut = Workbooks(fGetFileBaseName(sExcelFileName))
+    Err.Clear
+
+    If wbOut Is Nothing Then GoTo exit_fun
+
+    If UCase(wbOut.FullName) <> UCase(Trim(sExcelFileName)) Then
+        Set wbOut = Nothing
+        GoTo exit_fun
+    Else
+        bOut = True: GoTo exit_fun
+    End If
+
+exit_fun:
+    fExactExcelFileIsopen = bOut
+End Function
+Function fExcelFileOpenedToCloseIt(sExcelFileFullPath As String, Optional wbOut As Workbook _
+                            , Optional bRaiseErrIfOpened As Boolean = True _
+                            , Optional bActiveItIfAlreadyOpened As Boolean = True) As Boolean
+    Dim bIsOpenAlready As Boolean
+    Dim sFileBaseName As String
+
+    bIsOpenAlready = fExcelFileIsOpen(sExcelFileFullPath, wbOut)
+
+    If bIsOpenAlready Then
+        If bActiveItIfAlreadyOpened Then wbOut.Activate
+        'fGetFSO
+        'sExcelFileFullPath = gFSO.GetFile(sExcelFileFullPath).Path
+        sExcelFileFullPath = fCheckPath(sExcelFileFullPath)
+        sFileBaseName = fGetFileBaseName(sExcelFileFullPath)
+
+        If UCase(wbOut.FullName) = UCase(sExcelFileFullPath) Then
+            If bRaiseErrIfOpened Then
+                fErr "Excel File is open, pleae close it first." & vbCr & sFileBaseName
+            Else
+                MsgBox "Excel File is open, pleae close it first." & vbCr & sFileBaseName, vbExclamation
+            End If
+        Else
+            Set wbOut = Nothing
+
+            If bRaiseErrIfOpened Then
+                fErr "Another file with the same name """ & sFileBaseName & """ is open, please close it first."
+            Else
+                MsgBox "Another file with the same name """ & sFileBaseName & """ is open, please close it first.", vbExclamation
+            End If
+        End If
+    End If
+
+    fExcelFileOpenedToCloseIt = bIsOpenAlready
+End Function
+
+Function fErr(Optional sMsg As String = "") As VbMsgBoxResult
+    gErrNum = vbObjectError + CONFIG_ERROR_NUMBER
+    'gbBusinessError = True
+    gErrMsg = sMsg
+    'If fNzero(sMsg) Then fMsgBox "Error: " & vbCr & vbCr & sMsg, vbCritical
+    If fNzero(sMsg) Then fMsgBox sMsg, vbCritical
+
+    Err.Raise gErrNum, "", "Program is to be terminated."
+End Function
+
+Function fSelectSaveAsFileDialog(Optional asDeafaulfFilePath As String = "", Optional asFileFilters = "", Optional asTitle = "") As String
+'asFileFilters  :
+'       "Excel File(*.xlsx),*.xlsx, Excel Old Ver(*.xls),*.xls"
+'return value:
+'   blank: 1. user clicked cancel
+'          2. the selected file is already open
+' Important: the file extension of the default file name must be same as the first file filter extension, otherwise the defaulf file name will not be shownup
+'   default_file.xlsx  = "Excel File(*.xlsx),*.xlsx"
+    Dim fd As FileDialog
+    Dim sDefaultFolder As String
+    Dim sDefaultFileName As String
+    Dim sOut 'As String
+    Dim response As VbMsgBoxResult
+
+    If Len(Trim(asDeafaulfFilePath)) > 0 Then
+        sDefaultFolder = fGetFileParentFolder(asDeafaulfFilePath)
+        sDefaultFileName = fGetFileBaseName(asDeafaulfFilePath)
+
+        If Not fFolderExists(sDefaultFolder) Then sDefaultFolder = ThisWorkbook.Path
+    Else
+        sDefaultFolder = ThisWorkbook.Path
+    End If
+
+    sDefaultFolder = fCheckPath(sDefaultFolder)
+
+    fGetFSO
+    ChDrive gFSO.GetDriveName(sDefaultFolder)
+    ChDir sDefaultFolder
+
+    If Len(Trim(asFileFilters)) > 0 And Len(Trim(sDefaultFileName)) > 0 Then
+        Dim sFirstFilterExt As String
+        sFirstFilterExt = Trim(Split(asFileFilters, ",")(1))
+
+        If UCase(fGetFileExtension(sDefaultFileName)) <> UCase(Trim(Split(sFirstFilterExt, ".")(1))) Then
+            MsgBox "Warning: the file extension is not same as the first filter extension, which will cause the default to be blank." _
+               & vbCr & "so it is advisable to provide the first filter extension be same as the file extension" _
+               & vbCr & vbCr & "File name supplied: " & sDefaultFileName _
+               & vbCr & "Filters: " & asFileFilters, vbExclamation
+        End If
+    End If
+
+    Do While True
+        sOut = Application.GetSaveAsFilename(InitialFileName:=sDefaultFileName _
+                        , filefilter:=asFileFilters _
+                        , Title:=IIf(Len(Trim(asTitle)) > 0, asTitle, sDefaultFileName))
+        If sOut = False Then
+            sOut = ""
+            Exit Do
+        Else
+            If fFileExists(CStr(sOut)) Then
+                response = MsgBox("The file you speicified to save already exists, do you want to overwrite it?", vbYesNoCancel + vbCritical + vbDefaultButton2)
+                If response = vbYes Then
+                    If fExcelFileOpenedToCloseIt(CStr(sOut)) Then
+                        sOut = ""
+                        Exit Do
+                    Else
+                        Exit Do
+                    End If
+                ElseIf response = vbNo Then
+                    'to show the dialog again
+                Else
+                    sOut = ""
+                    Exit Do
+                End If
+            Else
+                Exit Do
+            End If
+        End If
+    Loop
+
+    fSelectSaveAsFileDialog = CStr(sOut)
 End Function

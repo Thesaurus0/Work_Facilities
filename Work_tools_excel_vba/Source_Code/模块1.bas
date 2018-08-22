@@ -21,6 +21,9 @@ Attribute ºê1.VB_ProcData.VB_Invoke_Func = " \n14"
     Dim iFileNum
     
     sTmpFile = "H:\Work_Facilities\Work_tools_excel_vba\a.txt"
+    
+    Dim c
+    c = fSelectSaveAsFileDialog("F:\VBA_Orders\a.xls", "Excel Old Ver(*.xls),*.xls, Excel File(*.xlsx),*.xlsx", "test")
 Call fCreateTextFileInUnicode(sTmpFile)
     
     iFileNum = FreeFile
