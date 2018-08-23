@@ -1059,3 +1059,11 @@ Function fGotoCell(rgGoTo As Range, Optional lScrollRow As Long = 0, Optional iS
     'shtCurrActive.Activate
     Set shtCurrActive = Nothing
 End Function
+
+Function fWorkbookVBProjectIsProteced(Optional wbTarget As Workbook) As Boolean
+    If wbTarget Is Nothing Then Set wb = ActiveWorkbook
+    
+    If wbTarget.VBProject.Protection = vbext_pp_locked Then
+        fErr "The VBA is the workbook is protected, please opend it manually, then rerun it"
+    End If
+End Function

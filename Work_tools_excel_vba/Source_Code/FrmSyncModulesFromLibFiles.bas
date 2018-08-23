@@ -14,6 +14,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
+Option Base 1
 
 Private sNewSelectedFile As String
 Private iWbSelected As Integer
@@ -30,6 +31,25 @@ Private Sub btnIterateWbs_Left_Click()
     tbFilePath_TargetMacro.value = sFile
     Call fSetFocus(tbFilePath_TargetMacro)
     sNewSelectedFile = sFile
+End Sub
+
+Private Sub btnSelectFile_CommonLibFiles_Click()
+    Dim arrFiles
+    Dim sDefaultFile As String
+    
+    If Len(Trim(tbFilePath_CommonLibFiles.Text)) > 0 Then
+        sDefaultFile = Split(tbFilePath_CommonLibFiles.Text, vbCrLf)(0)
+    End If
+    arrFiles = fSelectMultipleFileDialog(sDefaultFile, "VBA source code file=*.bas;*.cls;*.frm", "Common Lib Files")
+    
+    If ArrLen(arrFiles) > 0 Then
+        tbFilePath_CommonLibFiles.Text = Join(arrFiles, vbCrLf)
+    
+        Call fSetFocus(tbFilePath_CommonLibFiles)
+        sNewSelectedFile = arrFiles(LBound(arrFiles))
+    End If
+    
+    Erase arrFiles
 End Sub
 
 'Private Sub btnIterateWbs_Right_Click()
@@ -56,13 +76,21 @@ Private Sub btnSelectFile_TargetMacro_Click()
 End Sub
 
 Private Sub btnSelectFile_CommonLibFolder_Click()
-    Dim sFile As String
+    Dim sFolder As String
     
-    sFile = fSelectFolderDialog(sNewSelectedFile, "Excel File=*.xlsx;*.xls;*.xls*", "right Macro")
+    sFolder = fSelectFolderDialog(sNewSelectedFile, "Common Lib Folder")
     
-    If Len(Trim(sFile)) > 0 Then tbFilePath_Right.value = sFile
-    Call fSetFocus(tbFilePath_Right)
-    sNewSelectedFile = sFile
+    If Len(Trim(sFolder)) > 0 Then
+        tbCommonLibFolder.value = sFolder
+        
+        Dim arrFiles()
+        arrFiles = fGetAllFilesUnderFolder(sFolder)
+        
+        tbFilePath_CommonLibFiles.Text = Join(arrFiles, vbCrLf)
+        Erase arrFiles
+    End If
+    
+    Call fSetFocus(tbCommonLibFolder)
 End Sub
 
 
@@ -83,12 +111,14 @@ End Sub
 Private Sub cbOK_Click()
     If Not fValidateUserInput() Then Exit Sub
     
-    ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroToCompare).value = tbFilePath_TargetMacro.value
-    ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroToCompare).value = tbFilePath_Right.value
+    ThisWorkbook.Worksheets(1).Range(RANGE_TargetMacroToSyncWithCommLib).value = tbFilePath_TargetMacro.value
+    ThisWorkbook.Worksheets(1).Range(RANGE_CommonLibFolderSelected).value = tbCommonLibFolder.value
+    ThisWorkbook.Worksheets(1).Range(RANGE_CommonLibFilesSelected).value = tbFilePath_CommonLibFiles.value
     
     gsRtnValueOfForm = CONST_SUCCESS
     Unload Me
 End Sub
+
 
 Private Sub obByFiles_Click()
     If obByFiles.value Then
@@ -124,6 +154,7 @@ Private Sub UserForm_Initialize()
     gsRtnValueOfForm = ""
     
     tbFilePath_TargetMacro.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_TargetMacroToSyncWithCommLib).value)
+    tbCommonLibFolder.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_CommonLibFolderSelected).value)
     tbFilePath_CommonLibFiles.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_CommonLibFilesSelected).value)
     
     obByFiles.value = True
@@ -138,14 +169,46 @@ End Sub
 Function fValidateUserInput() As Boolean
     fValidateUserInput = False
     
-    If Not fFilesUserInputCheck(tbFilePath_TargetMacro, "Macro On Left") Then Exit Function
-    If Not fFilesUserInputCheck(tbFilePath_Right, "Macro On Right") Then Exit Function
+    If Not fFilesUserInputCheck(tbFilePath_TargetMacro, "Target Macro") Then Exit Function
     
-    If UCase(Trim(tbFilePath_TargetMacro.value)) = UCase(Trim(tbFilePath_Right.value)) Then
-        fMsgBox "The two files are same, please check"
-        Call fSetFocus(tbFilePath_TargetMacro)
-        Exit Function
+    Dim arrFiles
+    If obByFolder.value Then
+        If Not fFolderExists(tbCommonLibFolder.Text) Then
+            fMsgBox "The common lib folder you specified does not exist, please check."
+            Call fSetFocus(tbCommonLibFolder)
+            Exit Function
+        End If
+        
+        arrFiles = fGetAllFilesUnderFolder(tbCommonLibFolder.Text)
+        tbFilePath_CommonLibFiles.Text = Join(arrFiles, vbCrLf)
+        
+        Erase arrFiles
     End If
+    
+    If obByFiles.value Then
+        Dim i As Long
+        Dim sFile As String
+        
+        arrFiles = Split(tbFilePath_CommonLibFiles.Text, vbCrLf)
+        
+        For i = LBound(arrFiles) To UBound(arrFiles)
+            sFile = arrFiles(i)
+            
+            If Not fFileExists(sFile) Then
+                fMsgBox "File below does not exists " & vbCr & sFile
+                Call fSetFocus(tbFilePath_CommonLibFiles)
+                Exit Function
+            End If
+        Next
+        
+        Erase arrFiles
+    End If
+'
+'    If UCase(Trim(tbFilePath_TargetMacro.value)) = UCase(Trim(tbFilePath_Right.value)) Then
+'        fMsgBox "The two files are same, please check"
+'        Call fSetFocus(tbFilePath_TargetMacro)
+'        Exit Function
+'    End If
     
     fValidateUserInput = True
 End Function

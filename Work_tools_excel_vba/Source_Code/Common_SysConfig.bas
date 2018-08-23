@@ -40,4 +40,4 @@ Public Const RANGE_LeftMacroAlreadyExported = "A5"    'save the value indicating
 Public Const RANGE_RightMacroAlreadyExported = "A6"    'save the value indicating if the 2nd macro file name is already opened
 Public Const RANGE_TargetMacroToSyncWithCommLib = "A7"
 Public Const RANGE_CommonLibFilesSelected = "A8"
-Public Const RANGE_CommonLibFolderSelected = "A8"
+Public Const RANGE_CommonLibFolderSelected = "A9"

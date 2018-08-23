@@ -390,6 +390,59 @@ Function fSelectFileDialog(Optional asDefaultFilePath As String = "" _
     Set fd = Nothing
 End Function
 
+Function fSelectMultipleFileDialog(Optional asDefaultFilePath As String = "" _
+                         , Optional asFileFilters As String = "", Optional asTitle As String = "")
+    'asFileFilters :   "Excel File=*.xlsx;*.xls;*.xls*"
+    'asFileFilters :   "Excel File(*.xlsx),*.xlsx, "Text File(*.txt),*.txt, Visual Basic Files(*.bas;*.txt),*.bas;*.txt "
+    Dim fd As FileDialog
+    Dim sFilterDesc As String
+    Dim sFilterStr As String
+    Dim sDefaultFile As String
+    Dim arrOut()
+    
+    arrOut = Array()
+    
+    If Len(Trim(asFileFilters)) > 0 Then
+        sFilterDesc = Trim(Split(asFileFilters, "=")(0))
+        sFilterStr = Trim(Split(asFileFilters, "=")(1))
+    End If
+    
+    If Len(Trim(asDefaultFilePath)) > 0 Then
+       ' sDefaultFile = fGetFileParentFolder(asDefaultFilePath)
+        sDefaultFile = asDefaultFilePath
+    Else
+        sDefaultFile = IIf(Len(ActiveWorkbook.Path) > 0, ActiveWorkbook.Path, ThisWorkbook.Path)
+    End If
+    
+    Set fd = Application.FileDialog(msoFileDialogFilePicker)
+    
+    fd.InitialFileName = sDefaultFile
+    fd.Title = IIf(Len(asTitle) > 0, asTitle, fd.InitialFileName)
+    fd.AllowMultiSelect = True
+    
+    If Len(Trim(sFilterStr)) > 0 Then
+        fd.Filters.Clear
+        fd.Filters.Add sFilterDesc, sFilterStr, 1
+        fd.FilterIndex = 1
+        fd.InitialView = msoFileDialogViewDetails
+    Else
+        If fd.Filters.Count > 0 Then fd.Filters.Delete
+    End If
+
+    If fd.Show = -1 Then
+        Dim i As Integer
+        ReDim arrOut(1 To fd.SelectedItems.Count)
+        
+        For i = 1 To fd.SelectedItems.Count
+            arrOut(i) = fd.SelectedItems(i)
+        Next
+    End If
+        
+    Set fd = Nothing
+        
+    fSelectMultipleFileDialog = arrOut
+    Erase arrOut
+End Function
 Function fSelectFolderDialog(Optional asDefaultFolder As String = "", Optional asTitle As String = "") As String
     Dim fd As FileDialog
     Dim sFilterDesc As String
@@ -1769,9 +1822,12 @@ next_row:
     Next
 End Function
 Function fEnlargeAray(ByRef arr, Optional aPreserve As Boolean = True, Optional lIncrementNum As Integer = 1) As Long
-    fRedim arr, arrlen(arr) + 1, aPreserve
+    fRedim arr, ArrLen(arr) + 1, aPreserve
 End Function
 
+Function ArrLen(arr) As Long
+    ArrLen = UBound(arr) - LBound(arr) + 1
+End Function
 
 Function fEnlargeArayWithValue(ByRef arr, aValue, Optional aPreserve As Boolean = True, Optional lIncrementNum As Integer = 1) As Long
 '    If fArrayIsEmpty(arr) Then
@@ -2700,4 +2756,51 @@ Function fEnableUserFormControl(control As MSForms.control)
     control.Enabled = True
     control.BackColor = RGB(255, 255, 255)
 End Function
+
+Function fDeleteAllFilesFromFolder(sFolder As String)
+    fGetFSO
+
+    Dim aFile As File
+
+    If gFSO.FolderExists(sFolder) Then
+        For Each aFile In gFSO.GetFolder(sFolder).Files
+            aFile.Delete True
+        Next
+    End If
+End Function
+
+Function fGetAllFilesUnderFolder(sFolder As String)
+    Dim arrOut()
+    Dim i As Long
+    
+    arrOut = Array()
+    
+    fGetFSO
+
+    Dim aFile As File
+    Dim oFolder As Folder
+
+    If gFSO.FolderExists(sFolder) Then
+        Set oFolder = gFSO.GetFolder(sFolder)
+        
+        i = oFolder.Files.Count
+        
+        If i > 0 Then
+            ReDim arrOut(1 To i)
+        
+            i = 0
+            For Each aFile In gFSO.GetFolder(sFolder).Files
+                i = i + 1
+                arrOut(i) = aFile.Path
+            Next
+        End If
+    End If
+    
+    Set aFile = Nothing
+    Set oFolder = Nothing
+    
+    fGetAllFilesUnderFolder = arrOut
+    Erase arrOut
+End Function
+
 

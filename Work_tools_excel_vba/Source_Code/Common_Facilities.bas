@@ -927,3 +927,11 @@ Function fDeleteRemoveDataFormatFromSheetLeaveHeader(ByRef shtParam As Worksheet
         End With
     End If
 End Function
+
+Function fGetSavedValue(sRange As String)
+    fGetSavedValue = ThisWorkbook.Worksheets(1).Range(sRange).value
+End Function
+
+Function fSetSavedValue(sRange As String, aValue)
+    ThisWorkbook.Worksheets(1).Range(sRange).value = aValue
+End Function

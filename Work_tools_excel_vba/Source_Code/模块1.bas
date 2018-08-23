@@ -14,6 +14,9 @@ Sub ccaaafa()
 '    e = lLastPosBeforeManualActive
     Dim a
     a = Timer()
+    
+    Dim b
+    b = fGetAllFilesUnderFolder("F:\Github_Local_Repository\Pharmacy_ERP_System")
 End Sub
 Sub ºê1()
 Attribute ºê1.VB_ProcData.VB_Invoke_Func = " \n14"

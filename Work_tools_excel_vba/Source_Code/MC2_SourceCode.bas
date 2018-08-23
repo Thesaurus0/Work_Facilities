@@ -946,6 +946,11 @@ Sub subMain_CompareWithCommonLibFolder()
 End Sub
 
 Sub subMain_DeleteAndImportModulesSynchronize()
+    Dim sTargetMacro As String
+    Dim wbTarget As Workbook
+    Dim arrLibFiles()
+    Dim dictCommonModules As Dictionary
+    
     Dim sModuleName As String
     
     On Error GoTo error_handling
@@ -953,10 +958,23 @@ Sub subMain_DeleteAndImportModulesSynchronize()
     Call fInitialization
     
     FrmSyncModulesFromLibFiles.Show
+    If gsRtnValueOfForm <> CONST_SUCCESS Then fErr
+    
+    sTargetMacro = fGetSavedValue(RANGE_TargetMacroToSyncWithCommLib)
+    Set wbTarget = fOpenWorkbook(sTargetMacro, , , , , False)
+    Call fWorkbookVBProjectIsProteced(wbTarget)
+    
+    'sCommLibFolder = fGetSavedValue(RANGE_CommonLibFolderSelected)
+    arrLibFiles = Split(fGetSavedValue(RANGE_CommonLibFilesSelected), vbCrLf)
+    Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget)
+    
     
 error_handling:
 '    Erase arrFileLines
 '    Set dictFunsInFile = Nothing
+    Set wbTarget = Nothing
+    Erase arrLibFiles
+    Set dictCommonModules = Nothing
     
     If gErrNum <> 0 Then GoTo reset_excel_options
     
@@ -966,3 +984,15 @@ reset_excel_options:
     Err.Clear
     fClearGlobalVarialesResetOption
 End Sub
+
+Function fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget As Workbook, Optional ByRef dictToIgnore As Dictionary, Optional ByRef sCommonFileForMsg As String) As Dictionary
+    Dim dictOut As Dictionary
+    
+    Set dictOut = New Dictionary
+    Set dictToIgnore = New Dictionary
+    
+    
+
+    Set dictOut = Nothing
+    'Set dictToIgnore = New Dictionary
+End Function
