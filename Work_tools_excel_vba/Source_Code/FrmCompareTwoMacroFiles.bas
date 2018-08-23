@@ -13,6 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Option Explicit
 
 Private sNewSelectedFile As String
@@ -81,27 +82,27 @@ End Sub
 Private Sub cbOK_Click()
     If Not fValidateUserInput() Then Exit Sub
     
-    ThisWorkbook.Worksheets(1).Range(RANGE_A1).value = tbFilePath_Left.value
-    ThisWorkbook.Worksheets(1).Range(RANGE_A2).value = tbFilePath_Right.value
+    ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroToCompare).value = tbFilePath_Left.value
+    ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroToCompare).value = tbFilePath_Right.value
     
     gsRtnValueOfForm = CONST_SUCCESS
     Unload Me
 End Sub
 
 Private Sub cbReset_Click()
-'    ThisWorkbook.Worksheets(1).Range(RANGE_A1).Value = ""
-'    ThisWorkbook.Worksheets(1).Range(RANGE_A2).Value = ""
-'    ThisWorkbook.Worksheets(1).Range(RANGE_A3).Value = ""
-'    ThisWorkbook.Worksheets(1).Range(RANGE_A4).Value = ""
-    ThisWorkbook.Worksheets(1).Range(RANGE_A5).value = ""
-    ThisWorkbook.Worksheets(1).Range(RANGE_A6).value = ""
+'    ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroToCompare).Value = ""
+'    ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroToCompare).Value = ""
+'    ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroAlreadyOpened).Value = ""
+'    ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroAlreadyOpened).Value = ""
+    ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroAlreadyExported).value = ""
+    ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroAlreadyExported).value = ""
 End Sub
 
 Private Sub UserForm_Initialize()
     gsRtnValueOfForm = ""
     
-    tbFilePath_Left.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_A1).value)
-    tbFilePath_Right.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_A2).value)
+    tbFilePath_Left.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroToCompare).value)
+    tbFilePath_Right.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroToCompare).value)
     
     Call fSetFocus(tbFilePath_Left)
     

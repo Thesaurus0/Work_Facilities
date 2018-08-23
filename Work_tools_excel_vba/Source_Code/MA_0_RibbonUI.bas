@@ -302,6 +302,32 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
                 Case "ACTION":      Call subMain_ValidateMacroWithLocal
             End Select
             
+        Case "btnCompareWithCommLib"
+            Select Case sType
+                Case "LABEL":   val = "Compare with Comm Lib"
+                Case "IMAGE":   val = "ViewPrintLayoutView"
+                Case "SIZE":        val = "false"    'large=true, normal=false
+                Case "SHOW_IMAGE":  val = "true"
+                Case "SUPERTIP":    val = ""
+                Case "SUPERTIP":    val = ""
+                Case "SCREENTIP":   val = ""
+                
+                Case "ENABLED":     val = True
+                Case "ACTION":      Call subMain_CompareWithCommonLibFolder
+            End Select
+        Case "btnSyncWithCommLib"
+            Select Case sType
+                Case "LABEL":   val = "Sync Modules(Delete && Import!)"
+                Case "IMAGE":   val = "ViewPrintLayoutView"
+                Case "SIZE":        val = "false"    'large=true, normal=false
+                Case "SHOW_IMAGE":  val = "true"
+                Case "SUPERTIP":    val = ""
+                Case "SUPERTIP":    val = ""
+                Case "SCREENTIP":   val = ""
+                
+                Case "ENABLED":     val = True
+                Case "ACTION":      Call subMain_DeleteAndImportModulesSynchronize
+            End Select
         Case "btnListAllFunctions"
             Select Case sType
                 Case "LABEL":   val = "List All Functions"

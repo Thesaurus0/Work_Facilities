@@ -389,6 +389,33 @@ Function fSelectFileDialog(Optional asDefaultFilePath As String = "" _
         
     Set fd = Nothing
 End Function
+
+Function fSelectFolderDialog(Optional asDefaultFolder As String = "", Optional asTitle As String = "") As String
+    Dim fd As FileDialog
+    Dim sFilterDesc As String
+    Dim sFilterStr As String
+    Dim sDefaultFolder As String
+    
+    If Len(Trim(asDefaultFolder)) > 0 Then
+        sDefaultFolder = asDefaultFolder
+    Else
+        sDefaultFolder = IIf(Len(ActiveWorkbook.Path) > 0, ActiveWorkbook.Path, ThisWorkbook.Path)
+    End If
+    
+    Set fd = Application.FileDialog(msoFileDialogFolderPicker)
+    
+    fd.InitialFileName = sDefaultFolder
+    fd.Title = IIf(Len(asTitle) > 0, asTitle, fd.InitialFileName)
+    
+    If fd.Show = -1 Then
+        fSelectFolderDialog = fd.SelectedItems(1) & Application.PathSeparator
+    Else
+        fSelectFolderDialog = ""
+    End If
+        
+    Set fd = Nothing
+End Function
+
 Function fFolderExists(sFolder As String) As Boolean
     fGetFSO
     fFolderExists = gFSO.FolderExists(sFolder)
@@ -2652,18 +2679,6 @@ Function fFilesUserInputCheck(tbTarget As MSForms.TextBox, Optional msgTextName 
     fFilesUserInputCheck = True
 End Function
 
-'Function fDeleteAllFilesFromFolder(sFolder As String)
-'    fGetFSO
-'
-'    Dim aFile As File
-'
-'    If gFSO.FolderExists(sFolder) Then
-'        For Each aFile In gFSO.GetFolder(sFolder).Files
-'            aFile.Delete True
-'        Next
-'    End If
-'End Function
-
 Function fDeleleteAllFilesFromFolderIfNotExistsCreateIt(sFolder As String)
     sFolder = Trim(sFolder)
     
@@ -2675,3 +2690,14 @@ Function fDeleleteAllFilesFromFolderIfNotExistsCreateIt(sFolder As String)
         Err.Clear
     End If
 End Function
+
+Function fDisableUserFormControl(control As MSForms.control)
+    control.Enabled = False
+    control.BackColor = 11184814
+End Function
+
+Function fEnableUserFormControl(control As MSForms.control)
+    control.Enabled = True
+    control.BackColor = RGB(255, 255, 255)
+End Function
+

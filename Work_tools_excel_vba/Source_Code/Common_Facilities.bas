@@ -191,7 +191,7 @@ Function fListAllFunctionsInLocalFile(shtOutput As Worksheet)
     
     Call fInitialization
     
-    Call fBackUpTextFileWithDefaultFileName(SOURCE_CODE_LIBRARY_FILE)
+    Call fBackupTextFileWithDefaultFileName(SOURCE_CODE_LIBRARY_FILE)
     Call fAppendBlankLineToTheEndOfTextFile(SOURCE_CODE_LIBRARY_FILE)
     Call fTrimTrailingBlanksForTextFile(SOURCE_CODE_LIBRARY_FILE)
     Call fDeleteMultipleBlankLinesFromTextFile(SOURCE_CODE_LIBRARY_FILE)

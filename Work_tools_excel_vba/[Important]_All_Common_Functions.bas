@@ -6020,7 +6020,7 @@ Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional
                 sKeyColsFormula = sKeyColsFormula & "," & "len(trim($" & sColLetter & lRowFrom & ")) > 0"
             Next
             If Len(sKeyColsFormula) > 0 Then sKeyColsFormula = Right(sKeyColsFormula, Len(sKeyColsFormula) - 1)
-            sKeyColsFormula = sKeyColsFormula & ","
+            'sKeyColsFormula = sKeyColsFormula & ","
         Else
             sColLetter = fNum2Letter(arrKeyColsNotBlank)
             sKeyColsFormula = "len(trim($" & sColLetter & lRowFrom & ")) > 0"
@@ -8297,3 +8297,40 @@ Function fSelectFileDialog(Optional asDefaultFilePath As String = "" _
 
     Set fd = Nothing
 End Function
+
+Function fDisableUserFormControl(control As MSForms.control)
+    control.Enabled = False
+    control.BackColor = 11184814
+End Function
+
+Function fEnableUserFormControl(control As MSForms.control)
+    control.Enabled = True
+    control.BackColor = RGB(255, 255, 255)
+End Function
+
+Function fSelectFolderDialog(Optional asDefaultFolder As String = "", Optional asTitle As String = "") As String
+    Dim fd As FileDialog
+    Dim sFilterDesc As String
+    Dim sFilterStr As String
+    Dim sDefaultFolder As String
+    
+    If Len(Trim(asDefaultFolder)) > 0 Then
+        sDefaultFolder = asDefaultFolder
+    Else
+        sDefaultFolder = IIf(Len(ActiveWorkbook.Path) > 0, ActiveWorkbook.Path, ThisWorkbook.Path)
+    End If
+    
+    Set fd = Application.FileDialog(msoFileDialogFolderPicker)
+    
+    fd.InitialFileName = sDefaultFolder
+    fd.Title = IIf(Len(asTitle) > 0, asTitle, fd.InitialFileName)
+    
+    If fd.Show = -1 Then
+        fSelectFolderDialog = fd.SelectedItems(1) & Application.PathSeparator
+    Else
+        fSelectFolderDialog = ""
+    End If
+        
+    Set fd = Nothing
+End Function
+

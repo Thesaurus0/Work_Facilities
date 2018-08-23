@@ -20,7 +20,7 @@ Sub subMain_ValidateMacroWithLocal(Optional wb As Workbook)
     
     Call fInitialization
     
-    Call fBackUpTextFileWithDefaultFileName(SOURCE_CODE_LIBRARY_FILE)
+    Call fBackupTextFileWithDefaultFileName(SOURCE_CODE_LIBRARY_FILE)
     Call fAppendBlankLineToTheEndOfTextFile(SOURCE_CODE_LIBRARY_FILE)
     Call fTrimTrailingBlanksForTextFile(SOURCE_CODE_LIBRARY_FILE)
     Call fDeleteMultipleBlankLinesFromTextFile(SOURCE_CODE_LIBRARY_FILE)
@@ -307,7 +307,7 @@ Sub subMainValidateSourceCodeFile()
     
     Call fInitialization
     
-    Call fBackUpTextFileWithDefaultFileName(SOURCE_CODE_LIBRARY_FILE)
+    Call fBackupTextFileWithDefaultFileName(SOURCE_CODE_LIBRARY_FILE)
     
     Call fAppendBlankLineToTheEndOfTextFile(SOURCE_CODE_LIBRARY_FILE)
     Call fTrimTrailingBlanksForTextFile(SOURCE_CODE_LIBRARY_FILE)
@@ -735,11 +735,16 @@ Function fAppendToTextFile(sFileFullPath As String, sWhatToAppend As String, Opt
     Close #iFileNum
 End Function
 
-Function fBackUpTextFileWithDefaultFileName(sFileFullPath As String)
+Function fBackupTextFileWithDefaultFileName(sFileFullPath As String)
     Dim sTmpFile As String
     Dim lEachRow As Long
+    Dim sBackupFolder As String
     
-    sTmpFile = fGetFileNetName(sFileFullPath, True) & "." & Timer() * 100 & ".bak"
+    sBackupFolder = fGetFileParentFolder(sFileFullPath) & "backup\"
+    
+    Call fCheckPath(sBackupFolder, True)
+    
+    sTmpFile = sBackupFolder & fGetFileNetName(sFileFullPath) & "." & Timer() * 100 & ".bak"
     
     fGetFSO
     Call gFSO.CopyFile(sFileFullPath, sTmpFile, True)
@@ -782,8 +787,8 @@ Sub subMain_Compare2MacroFiles()
     Dim sFilePath_Left As String
     Dim sFilePath_Right As String
     
-    sFilePath_Left = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_A1).value)
-    sFilePath_Right = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_A2).value)
+    sFilePath_Left = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroToCompare).value)
+    sFilePath_Right = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroToCompare).value)
     
     If fFileExists(sFilePath_Left) And fFileExists(sFilePath_Right) _
     And fExactExcelFileIsopen(sFilePath_Left) And fExactExcelFileIsopen(sFilePath_Right) Then
@@ -803,8 +808,8 @@ Sub subMain_Compare2MacroFiles_AfterOpen2Macros()
     
     Call fInitialization
     
-    sFilePath_Left = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_A1).value)
-    sFilePath_Right = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_A2).value)
+    sFilePath_Left = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroToCompare).value)
+    sFilePath_Right = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroToCompare).value)
     
     sExportParentFolder = fGetFileParentFolder(sFilePath_Left) & "SourceCodeCompare_TempFolder\"
     sSourceCodeFolder_Left = sExportParentFolder & fGetFileNetName(sFilePath_Left)
@@ -823,8 +828,8 @@ Sub subMain_Compare2MacroFiles_AfterOpen2Macros()
         fErr "Please take the first step."
     End If
     
-    bAlreadyOpenedLeft = ThisWorkbook.Worksheets(1).Range(RANGE_A3)
-    bAlreadyOpenedRight = ThisWorkbook.Worksheets(1).Range(RANGE_A4)
+    bAlreadyOpenedLeft = ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroAlreadyOpened)
+    bAlreadyOpenedRight = ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroAlreadyOpened)
     
     Call fDeleleteAllFilesFromFolderIfNotExistsCreateIt(sSourceCodeFolder_Left)
     Call fExportSourceCodeToFolder(sSourceCodeFolder_Left, wbLeft)
@@ -860,8 +865,8 @@ Sub subMain_Compare2MacroFiles_AllInOne()
     FrmCompareTwoMacroFiles.Show
     If gsRtnValueOfForm <> CONST_SUCCESS Then GoTo error_handling
     
-    sFilePath_Left = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_A1).value)
-    sFilePath_Right = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_A2).value)
+    sFilePath_Left = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroToCompare).value)
+    sFilePath_Right = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroToCompare).value)
     
     sExportParentFolder = fGetFileParentFolder(sFilePath_Left) & "SourceCodeCompare_TempFolder\"
     sSourceCodeFolder_Left = sExportParentFolder & fGetFileNetName(sFilePath_Left)
@@ -881,22 +886,22 @@ Sub subMain_Compare2MacroFiles_AllInOne()
     bSameFileName = UCase(fGetFileBaseName(sFilePath_Left)) = UCase(fGetFileBaseName(sFilePath_Right))
     
     If bSameFileName Then
-        bAlreadyExportedLeft = ThisWorkbook.Worksheets(1).Range(RANGE_A5)
-        bAlreadyExportedRight = ThisWorkbook.Worksheets(1).Range(RANGE_A6)
+        bAlreadyExportedLeft = ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroAlreadyExported)
+        bAlreadyExportedRight = ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroAlreadyExported)
     
         If Not bAlreadyExportedLeft Then
             Set wbLeft = fOpenWorkbook(sFilePath_Left, bAlreadyOpenedLeft)
-            ThisWorkbook.Worksheets(1).Range(RANGE_A3) = bAlreadyOpenedLeft
+            ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroAlreadyOpened) = bAlreadyOpenedLeft
             'Call Hook
             Call fDeleleteAllFilesFromFolderIfNotExistsCreateIt(sSourceCodeFolder_Left)
             Call fExportSourceCodeToFolder(sSourceCodeFolder_Left, wbLeft)
             Call fCloseWorkBookWithoutSave(wbLeft)
             
-            ThisWorkbook.Worksheets(1).Range(RANGE_A5).value = True
+            ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroAlreadyExported).value = True
         End If
         
         Set wbRight = fOpenWorkbook(sFilePath_Right, bAlreadyOpenedRight)
-        ThisWorkbook.Worksheets(1).Range(RANGE_A4) = bAlreadyOpenedRight
+        ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroAlreadyOpened) = bAlreadyOpenedRight
         'Call Hook
         Call fDeleleteAllFilesFromFolderIfNotExistsCreateIt(sSourceCodeFolder_Right)
         Call fExportSourceCodeToFolder(sSourceCodeFolder_Right, wbRight)
@@ -904,10 +909,10 @@ Sub subMain_Compare2MacroFiles_AllInOne()
     Else
         'left file
         Set wbLeft = fOpenWorkbook(sFilePath_Left, bAlreadyOpenedLeft)
-        ThisWorkbook.Worksheets(1).Range(RANGE_A3) = bAlreadyOpenedLeft
+        ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroAlreadyOpened) = bAlreadyOpenedLeft
         'right file
         Set wbRight = fOpenWorkbook(sFilePath_Right, bAlreadyOpenedRight)
-        ThisWorkbook.Worksheets(1).Range(RANGE_A4) = bAlreadyOpenedRight
+        ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroAlreadyOpened) = bAlreadyOpenedRight
         
         'Call Hook
         Call fDeleleteAllFilesFromFolderIfNotExistsCreateIt(sSourceCodeFolder_Left)
@@ -934,4 +939,30 @@ reset_excel_options:
 End Sub
 Sub subMain_Compare2MacroFiles_2ndStep()
 
+End Sub
+
+Sub subMain_CompareWithCommonLibFolder()
+
+End Sub
+
+Sub subMain_DeleteAndImportModulesSynchronize()
+    Dim sModuleName As String
+    
+    On Error GoTo error_handling
+    
+    Call fInitialization
+    
+    FrmSyncModulesFromLibFiles.Show
+    
+error_handling:
+'    Erase arrFileLines
+'    Set dictFunsInFile = Nothing
+    
+    If gErrNum <> 0 Then GoTo reset_excel_options
+    
+    If fCheckIfUnCapturedExceptionAbnormalError Then GoTo reset_excel_options
+    
+reset_excel_options:
+    Err.Clear
+    fClearGlobalVarialesResetOption
 End Sub
