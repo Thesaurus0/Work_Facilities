@@ -948,12 +948,15 @@ End Sub
 Sub subMain_DeleteAndImportModulesSynchronize()
     Dim sTargetMacro As String
     Dim wbTarget As Workbook
-    Dim arrLibFiles()
+    Dim arrLibFiles
     Dim dictCommonModules As Dictionary
-    
+    Dim dictIgnore As Dictionary
+    Dim response As VbMsgBoxResult
+    Dim i As Integer
+    Dim sModuleFileFullPath As String
     Dim sModuleName As String
     
-    On Error GoTo error_handling
+    'On Error GoTo error_handling
     
     Call fInitialization
     
@@ -966,8 +969,25 @@ Sub subMain_DeleteAndImportModulesSynchronize()
     
     'sCommLibFolder = fGetSavedValue(RANGE_CommonLibFolderSelected)
     arrLibFiles = Split(fGetSavedValue(RANGE_CommonLibFilesSelected), vbCrLf)
-    Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget)
+    Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget, dictIgnore)
     
+    If dictIgnore.Count > 0 Then
+        response = MsgBox("Some of the library file you provided are not found in the macro, so they will be ingored, to continue?" & vbCr & vbCr & Join(dictIgnore.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
+        If response <> vbYes Then fErr
+    End If
+    If dictCommonModules.Count > 0 Then
+        response = MsgBox("The modules below are going to replace the existing ones, are you sure to continue?" & vbCr & vbCr & Join(dictCommonModules.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
+        If response <> vbYes Then fErr
+    Else
+        fErr "No modules are found in the macro matching the provided common lib files"
+    End If
+    
+    For i = 0 To dictCommonModules.Count - 1
+        sModuleFileFullPath = dictCommonModules.Keys(i)
+        sModuleName = dictCommonModules.Items(i)
+        
+        Call fImportModuleToWorkbookFromSourceCodeFile(wbTarget, sModuleFileFullPath, sModuleName)
+    Next
     
 error_handling:
 '    Erase arrFileLines
@@ -975,24 +995,141 @@ error_handling:
     Set wbTarget = Nothing
     Erase arrLibFiles
     Set dictCommonModules = Nothing
+    Set dictIgnore = Nothing
     
     If gErrNum <> 0 Then GoTo reset_excel_options
     
     If fCheckIfUnCapturedExceptionAbnormalError Then GoTo reset_excel_options
-    
+    fMsgBox "done.", vbInformation
 reset_excel_options:
     Err.Clear
     fClearGlobalVarialesResetOption
 End Sub
 
-Function fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget As Workbook, Optional ByRef dictToIgnore As Dictionary, Optional ByRef sCommonFileForMsg As String) As Dictionary
-    Dim dictOut As Dictionary
+Function fImportModuleToWorkbookFromSourceCodeFile(wbTarget As Workbook, sModuleFileFullPath As String, Optional asModuleName As String)
+    Dim sModuleNameInFile As String
     
+    sModuleNameInFile = fReadModuleNameFromSourceCodeFile(sModuleFileFullPath)
+    
+    If Len(Trim(asModuleName)) Then
+        Call fRemoveDeleteModuleIfExists(wbTarget, asModuleName)
+        
+        If sModuleNameInFile <> asModuleName Then
+            Call fRemoveDeleteModuleIfExists(wbTarget, sModuleNameInFile)
+        End If
+    Else
+        Call fRemoveDeleteModuleIfExists(wbTarget, sModuleNameInFile)
+    End If
+    
+    wbTarget.VBProject.VBComponents.Import sModuleFileFullPath
+    If Len(Trim(asModuleName)) > 0 Then
+        If sModuleNameInFile <> asModuleName Then
+            wbTarget.VBProject.VBComponents(sModuleNameInFile).Name = asModuleName
+        End If
+    End If
+End Function
+Function fRemoveDeleteModuleIfExists(wbTarget As Workbook, sModuleName As String)
+    Dim vbComp As VBIDE.VBComponent
+    
+    If Not fModuleExistsInMacro(sModuleName, wbTarget) Then Exit Function
+    
+    Set vbComp = wbTarget.VBProject.VBComponents(sModuleName)
+    wbTarget.VBProject.VBComponents.Remove vbComp
+    
+    Set vbComp = Nothing
+End Function
+
+Function fModuleExistsInMacro(sModuleName As String, Optional wb As Workbook, Optional ByRef outCodeM As CodeModule) As Boolean
+    On Error Resume Next
+    
+    fModuleExistsInMacro = True
+    
+    Dim vbP As VBIDE.VBProject
+    
+    If wb Is Nothing Then
+        Set vbP = ActiveWorkbook.VBProject
+    Else
+        Set vbP = wb.VBProject
+    End If
+    
+    Set outCodeM = vbP.VBComponents(sModuleName).CodeModule
+    If Err.Number <> 0 Then
+        Err.Clear
+        fModuleExistsInMacro = False
+    End If
+
+    Set vbP = Nothing
+End Function
+Function fFilterCommonLibFilesWithMacro(arrLibFiles, wb As Workbook, Optional ByRef dictToIgnore As Dictionary, Optional ByRef sCommonFileForMsg As String) As Dictionary
+    Dim dictOut As Dictionary
+    Dim vbP As VBIDE.VBProject
+    Dim vbComp As VBIDE.VBComponent
+    Dim sModType As String
+    Dim dictWbModules As Dictionary
+    Dim i As Integer
+    
+    Set vbP = wb.VBProject
     Set dictOut = New Dictionary
     Set dictToIgnore = New Dictionary
+    Set dictWbModules = New Dictionary
+    sCommonFileForMsg = ""
     
+    For Each vbComp In vbP.VBComponents
+        sModType = fVBEComponentTypeToString(vbComp.Type)
+        
+        If sModType <> "Document" Then
+            dictWbModules.Add UCase(vbComp.Name), ""
+        End If
+    Next
     
+    Dim sLibFile  As String
+    Dim sLibFileExt  As String
+    Dim sModuleNameInFile As String
+    For i = LBound(arrLibFiles) To UBound(arrLibFiles)
+        sLibFile = arrLibFiles(i)
+        
+        sLibFileExt = UCase(fGetFileExtension(sLibFile))
+        
+        If sLibFileExt = "FRX" Then GoTo next_file
+        
+        sModuleNameInFile = fReadModuleNameFromSourceCodeFile(sLibFile)
+        
+        If dictWbModules.Exists(UCase(sModuleNameInFile)) Then
+            dictOut.Add sLibFile, sModuleNameInFile '& DELIMITER & sLibFile
+            sCommonFileForMsg = sCommonFileForMsg & vbCr & sModuleNameInFile
+        Else
+            dictToIgnore.Add sLibFile, fGetFileBaseName(sLibFile)
+        End If
+next_file:
+    Next
 
+    Set dictWbModules = Nothing
+    Set vbComp = Nothing
+    Set vbP = Nothing
+    
+    Set fFilterCommonLibFilesWithMacro = dictOut
     Set dictOut = Nothing
-    'Set dictToIgnore = New Dictionary
+End Function
+
+Function fReadModuleNameFromSourceCodeFile(sLibFile As String) As String
+    Dim arrFileLines
+    Dim lEachLine As Long
+    Dim sEachLine As String
+    Dim sModuleName As String
+    
+    arrFileLines = fReadTextFileAllLinesToArray(sLibFile)
+    
+    For lEachLine = LBound(arrFileLines) To UBound(arrFileLines)
+        sEachLine = arrFileLines(lEachLine)
+        
+        If Trim(sEachLine) Like "Attribute VB_Name*" Then
+            sModuleName = Trim(Split(sEachLine, "=")(1))
+            sModuleName = Trim(Split(sModuleName, """")(1))
+            Exit For
+        End If
+    Next
+    Erase arrFileLines
+    
+    If Len(sModuleName) <= 0 Then fErr "the source code file is invalid, becase the module name cannot be detected"
+    fReadModuleNameFromSourceCodeFile = sModuleName
 End Function

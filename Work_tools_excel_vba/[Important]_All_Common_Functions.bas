@@ -8431,3 +8431,27 @@ Function fWorkbookVBProjectIsProteced(Optional wbTarget As Workbook) As Boolean
         fErr "The VBA is the workbook is protected, please opend it manually, then rerun it"
     End If
 End Function
+
+Function fReadModuleNameFromSourceCodeFile(sLibFile As String) As String
+    Dim arrFileLines
+    Dim lEachLine As Long
+    Dim sEachLine As String
+    Dim sModuleName As String
+    
+    arrFileLines = fReadTextFileAllLinesToArray(sLibFile)
+    
+    For lEachLine = LBound(arrFileLines) To UBound(arrFileLines)
+        sEachLine = arrFileLines(lEachLine)
+        
+        If Trim(sEachLine) Like "Attribute VB_Name*" Then
+            sModuleName = Trim(Split(sEachLine, "=")(1))
+            sModuleName = Trim(Split(sModuleName, """")(1))
+            Exit For
+        End If
+    Next
+    Erase arrFileLines
+    
+    If Len(sModuleName) <= 0 Then fErr "the source code file is invalid, becase the module name cannot be detected"
+    fReadModuleNameFromSourceCodeFile = sModuleName
+End Function
+

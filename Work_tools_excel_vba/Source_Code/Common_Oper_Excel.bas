@@ -1033,7 +1033,7 @@ Function fDeleteRowsFromSheetLeaveHeader(ByRef sht As Worksheet, Optional lHeade
     
     If lMaxRow > lHeaderByRow Then
         sht.Rows(lHeaderByRow + 1 & ":" & lMaxRow).Delete Shift:=xlUp
-        Application.GoTo sht.Cells(lHeaderByRow + 1, 1), True
+        Application.Goto sht.Cells(lHeaderByRow + 1, 1), True
     End If
     
     sht.Visible = iOrigVisibility
@@ -1049,7 +1049,7 @@ Function fGotoCell(rgGoTo As Range, Optional lScrollRow As Long = 0, Optional iS
     iOrigVisibility = rgGoTo.Parent.Visible
     rgGoTo.Parent.Visible = xlSheetVisible
     
-    Application.GoTo rgGoTo, True
+    Application.Goto rgGoTo, True
      
     If lScrollRow > 0 Then ActiveWindow.ScrollRow = lScrollRow
     If iScrollCol > 0 Then ActiveWindow.ScrollColumn = iScrollCol
@@ -1061,7 +1061,7 @@ Function fGotoCell(rgGoTo As Range, Optional lScrollRow As Long = 0, Optional iS
 End Function
 
 Function fWorkbookVBProjectIsProteced(Optional wbTarget As Workbook) As Boolean
-    If wbTarget Is Nothing Then Set wb = ActiveWorkbook
+    If wbTarget Is Nothing Then Set wbTarget = ActiveWorkbook
     
     If wbTarget.VBProject.Protection = vbext_pp_locked Then
         fErr "The VBA is the workbook is protected, please opend it manually, then rerun it"
