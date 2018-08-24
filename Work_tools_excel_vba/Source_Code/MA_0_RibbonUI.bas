@@ -317,7 +317,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
             End Select
         Case "btnSyncWithCommLib"
             Select Case sType
-                Case "LABEL":   val = "Sync Modules(Delete && Import!)"
+                Case "LABEL":   val = "Sync Modules(from Common Lib)"
                 Case "IMAGE":   val = "ViewPrintLayoutView"
                 Case "SIZE":        val = "false"    'large=true, normal=false
                 Case "SHOW_IMAGE":  val = "true"

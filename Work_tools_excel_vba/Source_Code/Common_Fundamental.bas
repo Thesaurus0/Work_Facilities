@@ -1949,9 +1949,9 @@ Function fEnableOrDisableExcelOptionsAll(bValue As Boolean)
 '    ThisWorkbook.CheckCompatibility = bValue
     
     If bValue Then
-        If Application.CutCopyMode = 0 And Workbooks.Count > 0 Then Application.Calculation = xlCalculationAutomatic
+        'If Application.CutCopyMode = 0 And Workbooks.Count > 0 Then Application.Calculation = xlCalculationAutomatic
     Else
-        If Application.CutCopyMode = 0 And Workbooks.Count > 0 Then Application.Calculation = xlCalculationManual
+        'If Application.CutCopyMode = 0 And Workbooks.Count > 0 Then Application.Calculation = xlCalculationManual
     End If
     
     Application.EnableEvents = bValue
@@ -2748,12 +2748,14 @@ Function fDeleleteAllFilesFromFolderIfNotExistsCreateIt(sFolder As String)
 End Function
 
 Function fDisableUserFormControl(control As MSForms.control)
-    control.Enabled = False
+    control.Enabled = True
+    control.Locked = True
     control.BackColor = 11184814
 End Function
 
 Function fEnableUserFormControl(control As MSForms.control)
     control.Enabled = True
+    control.Locked = False
     control.BackColor = RGB(255, 255, 255)
 End Function
 

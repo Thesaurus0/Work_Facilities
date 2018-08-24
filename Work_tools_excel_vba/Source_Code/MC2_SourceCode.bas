@@ -942,7 +942,79 @@ Sub subMain_Compare2MacroFiles_2ndStep()
 End Sub
 
 Sub subMain_CompareWithCommonLibFolder()
-
+    Dim sTargetMacro As String
+    Dim wbTarget As Workbook
+    Dim arrLibFiles
+    Dim dictCommonModules As Dictionary
+    'Dim dictIgnore As Dictionary
+    Dim response As VbMsgBoxResult
+    Dim i As Integer
+    Dim sModuleFileFullPath As String
+    Dim sModuleName As String
+    
+    On Error GoTo error_handling
+    
+    Call fInitialization
+    
+    Call fSetSavedValue(RANGE_SyncWithCommLibWhichFunction, "COMPARE_WITH_COMMON_LIB")
+    FrmSyncModulesFromLibFiles.Show
+    If gsRtnValueOfForm <> CONST_SUCCESS Then fErr
+    ThisWorkbook.Save
+    
+    sTargetMacro = fGetSavedValue(RANGE_TargetMacroToSyncWithCommLib)
+    Set wbTarget = fOpenWorkbook(sTargetMacro, , , , , False)
+    Call fWorkbookVBProjectIsProteced(wbTarget)
+    
+    'sCommLibFolder = fGetSavedValue(RANGE_CommonLibFolderSelected)
+    arrLibFiles = Split(fGetSavedValue(RANGE_CommonLibFilesSelected), vbCrLf)
+    Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget)
+    
+    If dictCommonModules.Count <= 0 Then fErr "No modules are found in the macro matching the provided common lib files"
+     
+    Dim sSourceCodeFolder_Macro As String
+    Dim sSourceCodeFolder_CommLib As String
+'
+'    sFilePath_Left = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroToCompare).value)
+'    sFilePath_Right = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroToCompare).value)
+    
+    sSourceCodeFolder_Macro = fGetFileParentFolder(sTargetMacro) & "SourceCodeCompare_TempFolder\" & fGetFileNetName(sTargetMacro)
+    
+    If Not fFolderExists(sSourceCodeFolder_Macro) Then fErr "the macro's compare folder does not exist, please run the first function first" & vbCr & vbCr & sSourceCodeFolder_Macro
+    
+    sSourceCodeFolder_CommLib = fGetFileParentFolder(CStr(arrLibFiles(LBound(arrLibFiles))))
+    Erase arrLibFiles
+    
+    Dim sLibFile As String
+    Dim vbP As VBIDE.VBProject
+    
+    Set vbP = wbTarget.VBProject
+    
+    Call fDeleleteAllFilesFromFolderIfNotExistsCreateIt(sSourceCodeFolder_Macro)
+    
+    For i = 0 To dictCommonModules.Count - 1
+        sModuleFileFullPath = dictCommonModules.Keys(i)
+        sModuleName = dictCommonModules.Items(i)
+        
+        vbP.VBComponents(sModuleName).Export sSourceCodeFolder_Macro & fGetFileBaseName(sModuleFileFullPath)
+    Next
+    
+    Shell """" & BEYOND_COMPARE_EXE & """ /fileviewer=""Folder Compare"" /filters=-*frx """ & sSourceCodeFolder_Macro & """  """ & sSourceCodeFolder_CommLib & """", vbMaximizedFocus
+    
+error_handling:
+'    Erase arrFileLines
+'    Set dictFunsInFile = Nothing
+    Set vbP = Nothing
+    Set wbTarget = Nothing
+    Set dictCommonModules = Nothing
+    'Set dictIgnore = Nothing
+    
+    If gErrNum <> 0 Then GoTo reset_excel_options
+    
+    If fCheckIfUnCapturedExceptionAbnormalError Then GoTo reset_excel_options
+    fMsgBox "done.", vbInformation
+reset_excel_options:
+    Err.Clear
+    fClearGlobalVarialesResetOption
 End Sub
 
 Sub subMain_DeleteAndImportModulesSynchronize()
@@ -960,8 +1032,10 @@ Sub subMain_DeleteAndImportModulesSynchronize()
     
     Call fInitialization
     
+    Call fSetSavedValue(RANGE_SyncWithCommLibWhichFunction, "SYNC_WITH_COMMON_LIB")
     FrmSyncModulesFromLibFiles.Show
     If gsRtnValueOfForm <> CONST_SUCCESS Then fErr
+    ThisWorkbook.Save
     
     sTargetMacro = fGetSavedValue(RANGE_TargetMacroToSyncWithCommLib)
     Set wbTarget = fOpenWorkbook(sTargetMacro, , , , , False)
@@ -970,6 +1044,7 @@ Sub subMain_DeleteAndImportModulesSynchronize()
     'sCommLibFolder = fGetSavedValue(RANGE_CommonLibFolderSelected)
     arrLibFiles = Split(fGetSavedValue(RANGE_CommonLibFilesSelected), vbCrLf)
     Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget, dictIgnore)
+    Erase arrLibFiles
     
     If dictIgnore.Count > 0 Then
         response = MsgBox("Some of the library file you provided are not found in the macro, so they will be ingored, to continue?" & vbCr & vbCr & Join(dictIgnore.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
@@ -986,6 +1061,8 @@ Sub subMain_DeleteAndImportModulesSynchronize()
         sModuleFileFullPath = dictCommonModules.Keys(i)
         sModuleName = dictCommonModules.Items(i)
         
+        'Call fRemoveDeleteModuleIfExists(wbTarget, sModuleName)
+        
         Call fImportModuleToWorkbookFromSourceCodeFile(wbTarget, sModuleFileFullPath, sModuleName)
     Next
     
@@ -993,7 +1070,6 @@ error_handling:
 '    Erase arrFileLines
 '    Set dictFunsInFile = Nothing
     Set wbTarget = Nothing
-    Erase arrLibFiles
     Set dictCommonModules = Nothing
     Set dictIgnore = Nothing
     
@@ -1030,12 +1106,27 @@ Function fImportModuleToWorkbookFromSourceCodeFile(wbTarget As Workbook, sModule
 End Function
 Function fRemoveDeleteModuleIfExists(wbTarget As Workbook, sModuleName As String)
     Dim vbComp As VBIDE.VBComponent
+    Dim sOldName As String
     
-    If Not fModuleExistsInMacro(sModuleName, wbTarget) Then Exit Function
-    
-    Set vbComp = wbTarget.VBProject.VBComponents(sModuleName)
-    wbTarget.VBProject.VBComponents.Remove vbComp
-    
+    If fModuleExistsInMacro(sModuleName, wbTarget) Then
+        Set vbComp = wbTarget.VBProject.VBComponents(sModuleName)
+        sOldName = Left(sModuleName & Replace(CStr(Timer()), ".", ""), 30)
+        vbComp.Name = sOldName
+
+        'Debug.Print "wbTarget.VBProject.VBComponents.Remove vbComp: " & sModuleName
+        wbTarget.VBProject.VBComponents.Remove vbComp
+        
+'        Call wbTarget.VBProject.VBComponents.Remove(wbTarget.VBProject.VBComponents(sModuleName))
+        Set vbComp = Nothing
+        
+'        If Not fModuleExistsInMacro(sModuleName, wbTarget) Then
+'            Debug.Print "" & sModuleName & " was removed."
+'        Else
+'            Debug.Print "!!! " & sModuleName & " was not removed."
+'        End If
+    Else
+        Debug.Print "!!! " & sModuleName & " does not exists in the workbook, please check."
+    End If
     Set vbComp = Nothing
 End Function
 
@@ -1090,7 +1181,7 @@ Function fFilterCommonLibFilesWithMacro(arrLibFiles, wb As Workbook, Optional By
         
         sLibFileExt = UCase(fGetFileExtension(sLibFile))
         
-        If sLibFileExt = "FRX" Then GoTo next_file
+        If sLibFileExt <> "BAS" And sLibFileExt <> "CLS" And sLibFileExt <> "FRM" Then GoTo next_file
         
         sModuleNameInFile = fReadModuleNameFromSourceCodeFile(sLibFile)
         

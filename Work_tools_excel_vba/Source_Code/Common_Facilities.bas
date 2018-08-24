@@ -134,11 +134,15 @@ Sub sub_ExportSourceCodeToFolder(Optional wb As Workbook)
     'Dim iCnt As Long
 '    Dim vbProj As VBIDE.VBProject
 '    Dim vbComp As VBIDE.VBComponent
+
+    On Error GoTo clear_exit
     
     wbIsnothing = CBool(wb Is Nothing)
     If wbIsnothing Then
         Set wb = ActiveWorkbook
     End If
+    
+    Call fWorkbookVBProjectIsProteced(wb)
     
     If Len(wb.Path) <= 0 Then GoTo clear_exit
     

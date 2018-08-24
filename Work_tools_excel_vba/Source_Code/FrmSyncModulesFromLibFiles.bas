@@ -78,7 +78,7 @@ End Sub
 Private Sub btnSelectFile_CommonLibFolder_Click()
     Dim sFolder As String
     
-    sFolder = fSelectFolderDialog(sNewSelectedFile, "Common Lib Folder")
+    sFolder = fSelectFolderDialog(tbCommonLibFolder.Text, "Common Lib Folder")
     
     If Len(Trim(sFolder)) > 0 Then
         tbCommonLibFolder.value = sFolder
@@ -111,14 +111,18 @@ End Sub
 Private Sub cbOK_Click()
     If Not fValidateUserInput() Then Exit Sub
     
-    ThisWorkbook.Worksheets(1).Range(RANGE_TargetMacroToSyncWithCommLib).value = tbFilePath_TargetMacro.value
-    ThisWorkbook.Worksheets(1).Range(RANGE_CommonLibFolderSelected).value = tbCommonLibFolder.value
-    ThisWorkbook.Worksheets(1).Range(RANGE_CommonLibFilesSelected).value = tbFilePath_CommonLibFiles.value
+    Call fSetSavedValue(RANGE_TargetMacroToSyncWithCommLib, tbFilePath_TargetMacro.value)
+    Call fSetSavedValue(RANGE_CommonLibFolderSelected, tbCommonLibFolder.value)
+    Call fSetSavedValue(RANGE_CommonLibFilesSelected, tbFilePath_CommonLibFiles.value)
     
     gsRtnValueOfForm = CONST_SUCCESS
     Unload Me
 End Sub
 
+
+Private Sub Frame2_Click()
+
+End Sub
 
 Private Sub obByFiles_Click()
     If obByFiles.value Then
@@ -141,6 +145,25 @@ Private Sub obByFolder_Click()
 End Sub
  
 
+Private Sub tbCommonLibFolder_AfterUpdate()
+    Dim arrFiles
+    
+    If Len(Trim(tbCommonLibFolder.Text)) > 0 Then
+        If Not fFolderExists(Trim(tbCommonLibFolder.Text)) Then
+            fMsgBox "The folder you specified does not exist."
+            Call fSetFocus(tbCommonLibFolder)
+            Exit Sub
+        End If
+        
+        arrFiles = fGetAllFilesUnderFolder(Trim(tbCommonLibFolder.Text))
+        
+        tbFilePath_CommonLibFiles = Join(arrFiles, vbCrLf)
+    Else
+        tbFilePath_CommonLibFiles.Text = ""
+    End If
+End Sub
+
+
 'Private Sub cbReset_Click()
 ''    ThisWorkbook.Worksheets(1).Range(RANGE_LeftMacroToCompare).Value = ""
 ''    ThisWorkbook.Worksheets(1).Range(RANGE_RightMacroToCompare).Value = ""
@@ -153,15 +176,39 @@ End Sub
 Private Sub UserForm_Initialize()
     gsRtnValueOfForm = ""
     
-    tbFilePath_TargetMacro.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_TargetMacroToSyncWithCommLib).value)
-    tbCommonLibFolder.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_CommonLibFolderSelected).value)
-    tbFilePath_CommonLibFiles.value = Trim(ThisWorkbook.Worksheets(1).Range(RANGE_CommonLibFilesSelected).value)
+    tbCommonLibFolder.value = fGetSavedValue(RANGE_CommonLibFolderSelected)
+    tbFilePath_CommonLibFiles.value = fGetSavedValue(RANGE_CommonLibFilesSelected)
     
     obByFiles.value = True
-    Call fDisableUserFormControl(tbCommonLibFolder)
-    Call fDisableUserFormControl(btnSelectFile_CommonLibFolder)
     
-    Call fSetFocus(tbFilePath_TargetMacro)
+    If fGetSavedValue(RANGE_SyncWithCommLibWhichFunction) = "SYNC_WITH_COMMON_LIB" Then
+        Call fDisableUserFormControl(tbFilePath_TargetMacro)
+        Call fDisableUserFormControl(btnSelectFile_TargetMacro)
+        Call fDisableUserFormControl(btnIterateWbs_Left)
+        Call fDisableUserFormControl(tbCommonLibFolder)
+        Call fDisableUserFormControl(btnSelectFile_CommonLibFolder)
+        Call fDisableUserFormControl(tbFilePath_CommonLibFiles)
+        Call fDisableUserFormControl(btnSelectFile_CommonLibFiles)
+
+        Call fDisableUserFormControl(obByFolder)
+        Call fDisableUserFormControl(obByFiles)
+        
+        tbFilePath_TargetMacro.value = fGetSavedValue(RANGE_TargetMacroToSyncWithCommLib)
+    Else 'COMPARE_WITH_COMMON_LIB
+        Call fEnableUserFormControl(tbFilePath_TargetMacro)
+        Call fEnableUserFormControl(btnSelectFile_TargetMacro)
+        Call fEnableUserFormControl(btnIterateWbs_Left)
+        Call fEnableUserFormControl(tbFilePath_CommonLibFiles)
+        Call fEnableUserFormControl(btnSelectFile_CommonLibFiles)
+        
+        Call fDisableUserFormControl(tbCommonLibFolder)
+        Call fDisableUserFormControl(btnSelectFile_CommonLibFolder)
+        
+        Call fSetFocus(tbFilePath_TargetMacro)
+        
+        tbFilePath_TargetMacro.value = ActiveWorkbook.FullName
+    End If
+    
     sNewSelectedFile = tbFilePath_TargetMacro.value
     iWbSelected = 1
 End Sub

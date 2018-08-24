@@ -41,3 +41,5 @@ Public Const RANGE_RightMacroAlreadyExported = "A6"    'save the value indicatin
 Public Const RANGE_TargetMacroToSyncWithCommLib = "A7"
 Public Const RANGE_CommonLibFilesSelected = "A8"
 Public Const RANGE_CommonLibFolderSelected = "A9"
+Public Const RANGE_SyncWithCommLibWhichFunction = "A10"
+
