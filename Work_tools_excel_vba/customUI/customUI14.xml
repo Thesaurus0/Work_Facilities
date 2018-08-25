@@ -43,6 +43,7 @@
 				<group id="grpSourceCodeCommonLib" label="Sync By Module"> 
 					<button id="btnCompareWithCommLib" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
 					<button id="btnSyncWithCommLib" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+					<button id="btnSyncWithSelfRevised" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
 				</group>
 				<group id="grpSourceCode02" label="Compare"> 
 					<button id="btnListAllFunctions" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 

@@ -326,7 +326,20 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
                 Case "SCREENTIP":   val = ""
                 
                 Case "ENABLED":     val = True
-                Case "ACTION":      Call subMain_DeleteAndImportModulesSynchronize
+                Case "ACTION":      Call subMain_SyncWithCommonLib
+            End Select
+        Case "btnSyncWithSelfRevised"
+            Select Case sType
+                Case "LABEL":   val = "Sync Modules(from Self Revised)"
+                Case "IMAGE":   val = "ViewPrintLayoutView"
+                Case "SIZE":        val = "false"    'large=true, normal=false
+                Case "SHOW_IMAGE":  val = "true"
+                Case "SUPERTIP":    val = ""
+                Case "SUPERTIP":    val = ""
+                Case "SCREENTIP":   val = ""
+                
+                Case "ENABLED":     val = True
+                Case "ACTION":      Call subMain_SyncWithSelfRevised
             End Select
         Case "btnListAllFunctions"
             Select Case sType

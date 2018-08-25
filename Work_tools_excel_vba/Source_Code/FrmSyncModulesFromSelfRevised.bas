@@ -1,19 +1,18 @@
 VERSION 5.00
-Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} FrmSyncModulesFromLibFiles 
-   Caption         =   "Sync with Common Lib"
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} FrmSyncModulesFromSelfRevised 
+   Caption         =   "Sync with Self Revised by Beyond Compare"
    ClientHeight    =   9150.001
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   15915
-   OleObjectBlob   =   "FrmSyncModulesFromLibFiles.frx":0000
+   OleObjectBlob   =   "FrmSyncModulesFromSelfRevised.frx":0000
    StartUpPosition =   1  '所有者中心
 End
-Attribute VB_Name = "FrmSyncModulesFromLibFiles"
+Attribute VB_Name = "FrmSyncModulesFromSelfRevised"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
 Option Explicit
 Option Base 1
 
@@ -121,29 +120,25 @@ Private Sub cbOK_Click()
 End Sub
 
 
-Private Sub Frame2_Click()
+'Private Sub obByFiles_Click()
+'    If obByFiles.value Then
+'        Call fDisableUserFormControl(btnSelectFile_CommonLibFolder)
+'        Call fDisableUserFormControl(tbCommonLibFolder)
+'
+'        Call fEnableUserFormControl(tbFilePath_CommonLibFiles)
+'        Call fEnableUserFormControl(btnSelectFile_CommonLibFiles)
+'    End If
+'End Sub
 
-End Sub
-
-Private Sub obByFiles_Click()
-    If obByFiles.value Then
-        Call fDisableUserFormControl(btnSelectFile_CommonLibFolder)
-        Call fDisableUserFormControl(tbCommonLibFolder)
-        
-        Call fEnableUserFormControl(tbFilePath_CommonLibFiles)
-        Call fEnableUserFormControl(btnSelectFile_CommonLibFiles)
-    End If
-End Sub
-
-Private Sub obByFolder_Click()
-    If obByFolder.value Then
-        Call fEnableUserFormControl(btnSelectFile_CommonLibFolder)
-        Call fEnableUserFormControl(tbCommonLibFolder)
-        
-        Call fDisableUserFormControl(tbFilePath_CommonLibFiles)
-        Call fDisableUserFormControl(btnSelectFile_CommonLibFiles)
-    End If
-End Sub
+'Private Sub obByFolder_Click()
+'    If obByFolder.value Then
+'        Call fEnableUserFormControl(btnSelectFile_CommonLibFolder)
+'        Call fEnableUserFormControl(tbCommonLibFolder)
+'
+'        Call fDisableUserFormControl(tbFilePath_CommonLibFiles)
+'        Call fDisableUserFormControl(btnSelectFile_CommonLibFiles)
+'    End If
+'End Sub
  
 
 Private Sub tbCommonLibFolder_AfterUpdate()
@@ -175,40 +170,48 @@ End Sub
 'End Sub
 
 Private Sub UserForm_Initialize()
+    Dim sMacro As String
+    Dim sSourceCodeFolder As String
+    Dim arrFiles()
+    
     gsRtnValueOfForm = ""
     
-    tbCommonLibFolder.value = fGetSavedValue(RANGE_CommonLibFolderSelected)
-    tbFilePath_CommonLibFiles.value = fGetSavedValue(RANGE_CommonLibFilesSelected)
+    sMacro = fGetSavedValue(RANGE_TargetMacroToSyncWithCommLib)
+    tbFilePath_TargetMacro.value = sMacro
     
-    obByFiles.value = True
+    sSourceCodeFolder = fGetFileParentFolder(sMacro) & "SourceCodeCompare_TempFolder\" & fGetFileNetName(sMacro)
+    tbCommonLibFolder.value = sSourceCodeFolder
     
-    If fGetSavedValue(RANGE_SyncWithCommLibWhichFunction) = "SYNC_WITH_COMMON_LIB" Then
-        Call fDisableUserFormControl(tbFilePath_TargetMacro)
-        Call fDisableUserFormControl(btnSelectFile_TargetMacro)
-        Call fDisableUserFormControl(btnIterateWbs_Left)
-        Call fDisableUserFormControl(tbCommonLibFolder)
-        Call fDisableUserFormControl(btnSelectFile_CommonLibFolder)
-        Call fDisableUserFormControl(tbFilePath_CommonLibFiles)
-        Call fDisableUserFormControl(btnSelectFile_CommonLibFiles)
+    arrFiles = fGetAllFilesUnderFolder(sSourceCodeFolder)
+    tbFilePath_CommonLibFiles.value = Join(arrFiles, vbCrLf)
+    Erase arrFiles
+    
+    Call fDisableUserFormControl(tbFilePath_TargetMacro)
+    Call fDisableUserFormControl(btnSelectFile_TargetMacro)
+    Call fDisableUserFormControl(btnIterateWbs_Left)
+    Call fDisableUserFormControl(tbCommonLibFolder)
+    Call fDisableUserFormControl(btnSelectFile_CommonLibFolder)
+    Call fDisableUserFormControl(tbFilePath_CommonLibFiles)
+    Call fDisableUserFormControl(btnSelectFile_CommonLibFiles)
 
-        Call fDisableUserFormControl(obByFolder)
-        Call fDisableUserFormControl(obByFiles)
+'        Call fDisableUserFormControl(obByFolder)
+'        Call fDisableUserFormControl(obByFiles)
         
-        tbFilePath_TargetMacro.value = fGetSavedValue(RANGE_TargetMacroToSyncWithCommLib)
-    Else 'COMPARE_WITH_COMMON_LIB
-        Call fEnableUserFormControl(tbFilePath_TargetMacro)
-        Call fEnableUserFormControl(btnSelectFile_TargetMacro)
-        Call fEnableUserFormControl(btnIterateWbs_Left)
-        Call fEnableUserFormControl(tbFilePath_CommonLibFiles)
-        Call fEnableUserFormControl(btnSelectFile_CommonLibFiles)
-        
-        Call fDisableUserFormControl(tbCommonLibFolder)
-        Call fDisableUserFormControl(btnSelectFile_CommonLibFolder)
-        
-        Call fSetFocus(tbFilePath_TargetMacro)
-        
-        tbFilePath_TargetMacro.value = ActiveWorkbook.FullName
-    End If
+'
+'    Else 'COMPARE_WITH_COMMON_LIB
+'        Call fEnableUserFormControl(tbFilePath_TargetMacro)
+'        Call fEnableUserFormControl(btnSelectFile_TargetMacro)
+'        Call fEnableUserFormControl(btnIterateWbs_Left)
+'        Call fEnableUserFormControl(tbFilePath_CommonLibFiles)
+'        Call fEnableUserFormControl(btnSelectFile_CommonLibFiles)
+'
+'        Call fDisableUserFormControl(tbCommonLibFolder)
+'        Call fDisableUserFormControl(btnSelectFile_CommonLibFolder)
+'
+'        Call fSetFocus(tbFilePath_TargetMacro)
+'
+'        tbFilePath_TargetMacro.value = ActiveWorkbook.FullName
+'    End If
     
     sNewSelectedFile = tbFilePath_TargetMacro.value
     iWbSelected = 1
@@ -220,7 +223,7 @@ Function fValidateUserInput() As Boolean
     If Not fFilesUserInputCheck(tbFilePath_TargetMacro, "Target Macro") Then Exit Function
     
     Dim arrFiles
-    If obByFolder.value Then
+'    If obByFolder.value Then
         If Not fFolderExists(tbCommonLibFolder.Text) Then
             fMsgBox "The common lib folder you specified does not exist, please check."
             Call fSetFocus(tbCommonLibFolder)
@@ -231,9 +234,9 @@ Function fValidateUserInput() As Boolean
         tbFilePath_CommonLibFiles.Text = Join(arrFiles, vbCrLf)
         
         Erase arrFiles
-    End If
-    
-    If obByFiles.value Then
+'    End If
+'
+'    If obByFiles.value Then
         Dim i As Long
         Dim sFile As String
         
@@ -250,7 +253,7 @@ Function fValidateUserInput() As Boolean
         Next
         
         Erase arrFiles
-    End If
+'    End If
 '
 '    If UCase(Trim(tbFilePath_TargetMacro.value)) = UCase(Trim(tbFilePath_Right.value)) Then
 '        fMsgBox "The two files are same, please check"

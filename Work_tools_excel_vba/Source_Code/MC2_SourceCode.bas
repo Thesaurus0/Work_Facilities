@@ -1016,13 +1016,12 @@ reset_excel_options:
     Err.Clear
     fClearGlobalVarialesResetOption
 End Sub
-
-Sub subMain_DeleteAndImportModulesSynchronize()
+Sub subMain_SyncWithSelfRevised()
     Dim sTargetMacro As String
     Dim wbTarget As Workbook
     Dim arrLibFiles
-    Dim dictCommonModules As Dictionary
-    Dim dictIgnore As Dictionary
+'    Dim dictCommonModules As Dictionary
+'    Dim dictIgnore As Dictionary
     Dim response As VbMsgBoxResult
     Dim i As Integer
     Dim sModuleFileFullPath As String
@@ -1032,8 +1031,7 @@ Sub subMain_DeleteAndImportModulesSynchronize()
     
     Call fInitialization
     
-    Call fSetSavedValue(RANGE_SyncWithCommLibWhichFunction, "SYNC_WITH_COMMON_LIB")
-    FrmSyncModulesFromLibFiles.Show
+    FrmSyncModulesFromSelfRevised.Show
     If gsRtnValueOfForm <> CONST_SUCCESS Then fErr
     ThisWorkbook.Save
     
@@ -1043,35 +1041,36 @@ Sub subMain_DeleteAndImportModulesSynchronize()
     
     'sCommLibFolder = fGetSavedValue(RANGE_CommonLibFolderSelected)
     arrLibFiles = Split(fGetSavedValue(RANGE_CommonLibFilesSelected), vbCrLf)
-    Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget, dictIgnore)
-    Erase arrLibFiles
-    
-    If dictIgnore.Count > 0 Then
-        response = MsgBox("Some of the library file you provided are not found in the macro, so they will be ingored, to continue?" & vbCr & vbCr & Join(dictIgnore.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
-        If response <> vbYes Then fErr
-    End If
-    If dictCommonModules.Count > 0 Then
-        response = MsgBox("The modules below are going to replace the existing ones, are you sure to continue?" & vbCr & vbCr & Join(dictCommonModules.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
+'    Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget, dictIgnore)
+
+    Dim sCommonModMsg As String
+    For i = LBound(arrLibFiles) To UBound(arrLibFiles)
+        sModuleName = fReadModuleNameFromSourceCodeFile(CStr(arrLibFiles(i)))
+        
+        sCommonModMsg = sCommonModMsg & vbCr & sModuleName
+    Next
+
+    If ArrLen(arrLibFiles) > 0 Then
+        response = MsgBox("The modules below are going to replace the existing ones, are you sure to continue?" & vbCr & vbCr & sCommonModMsg, vbYesNo + vbQuestion + vbDefaultButton1)
         If response <> vbYes Then fErr
     Else
-        fErr "No modules are found in the macro matching the provided common lib files"
+        fErr "No modules are found"
     End If
-    
-    For i = 0 To dictCommonModules.Count - 1
-        sModuleFileFullPath = dictCommonModules.Keys(i)
-        sModuleName = dictCommonModules.Items(i)
+
+    For i = LBound(arrLibFiles) To UBound(arrLibFiles)
+        sModuleFileFullPath = arrLibFiles(i)
         
-        'Call fRemoveDeleteModuleIfExists(wbTarget, sModuleName)
-        
-        Call fImportModuleToWorkbookFromSourceCodeFile(wbTarget, sModuleFileFullPath, sModuleName)
+        Call fImportModuleToWorkbookFromSourceCodeFile(wbTarget, sModuleFileFullPath)
     Next
+    
+    Erase arrLibFiles
     
 error_handling:
 '    Erase arrFileLines
 '    Set dictFunsInFile = Nothing
     Set wbTarget = Nothing
-    Set dictCommonModules = Nothing
-    Set dictIgnore = Nothing
+'    Set dictCommonModules = Nothing
+'    Set dictIgnore = Nothing
     
     If gErrNum <> 0 Then GoTo reset_excel_options
     
@@ -1080,6 +1079,71 @@ error_handling:
 reset_excel_options:
     Err.Clear
     fClearGlobalVarialesResetOption
+End Sub
+
+Sub subMain_SyncWithCommonLib()
+'    Dim sTargetMacro As String
+'    Dim wbTarget As Workbook
+'    Dim arrLibFiles
+'    Dim dictCommonModules As Dictionary
+'    Dim dictIgnore As Dictionary
+'    Dim response As VbMsgBoxResult
+'    Dim i As Integer
+'    Dim sModuleFileFullPath As String
+'    Dim sModuleName As String
+'
+'    On Error GoTo error_handling
+'
+'    Call fInitialization
+'
+'    Call fSetSavedValue(RANGE_SyncWithCommLibWhichFunction, "SYNC_WITH_COMMON_LIB")
+'    FrmSyncModulesFromLibFiles.Show
+'    If gsRtnValueOfForm <> CONST_SUCCESS Then fErr
+'    ThisWorkbook.Save
+'
+'    sTargetMacro = fGetSavedValue(RANGE_TargetMacroToSyncWithCommLib)
+'    Set wbTarget = fOpenWorkbook(sTargetMacro, , , , , False)
+'    Call fWorkbookVBProjectIsProteced(wbTarget)
+'
+'    'sCommLibFolder = fGetSavedValue(RANGE_CommonLibFolderSelected)
+'    arrLibFiles = Split(fGetSavedValue(RANGE_CommonLibFilesSelected), vbCrLf)
+'    Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget, dictIgnore)
+'    Erase arrLibFiles
+'
+'    If dictIgnore.Count > 0 Then
+'        response = MsgBox("Some of the library file you provided are not found in the macro, so they will be ingored, to continue?" & vbCr & vbCr & Join(dictIgnore.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
+'        If response <> vbYes Then fErr
+'    End If
+'    If dictCommonModules.Count > 0 Then
+'        response = MsgBox("The modules below are going to replace the existing ones, are you sure to continue?" & vbCr & vbCr & Join(dictCommonModules.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
+'        If response <> vbYes Then fErr
+'    Else
+'        fErr "No modules are found in the macro matching the provided common lib files"
+'    End If
+'
+'    For i = 0 To dictCommonModules.Count - 1
+'        sModuleFileFullPath = dictCommonModules.Keys(i)
+'        sModuleName = dictCommonModules.Items(i)
+'
+'        'Call fRemoveDeleteModuleIfExists(wbTarget, sModuleName)
+'
+'        Call fImportModuleToWorkbookFromSourceCodeFile(wbTarget, sModuleFileFullPath, sModuleName)
+'    Next
+'
+'error_handling:
+''    Erase arrFileLines
+''    Set dictFunsInFile = Nothing
+'    Set wbTarget = Nothing
+'    Set dictCommonModules = Nothing
+'    Set dictIgnore = Nothing
+'
+'    If gErrNum <> 0 Then GoTo reset_excel_options
+'
+'    If fCheckIfUnCapturedExceptionAbnormalError Then GoTo reset_excel_options
+'    fMsgBox "done.", vbInformation
+'reset_excel_options:
+'    Err.Clear
+'    fClearGlobalVarialesResetOption
 End Sub
 
 Function fImportModuleToWorkbookFromSourceCodeFile(wbTarget As Workbook, sModuleFileFullPath As String, Optional asModuleName As String)
