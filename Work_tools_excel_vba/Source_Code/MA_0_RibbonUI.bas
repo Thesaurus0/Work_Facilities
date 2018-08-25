@@ -407,7 +407,32 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
                 Case "ACTION":      Call subMain_ListAllFunctionsInFileLibrary
             End Select
             
-            
+        Case "btnScanUselessFunctions"
+            Select Case sType
+                Case "LABEL":   val = "Scan Useless Functions"
+                Case "IMAGE":   val = "ViewPrintLayoutView"
+                Case "SIZE":        val = "false"    'large=true, normal=false
+                Case "SHOW_IMAGE":  val = "true"
+                Case "SUPERTIP":    val = ""
+                Case "SUPERTIP":    val = ""
+                Case "SCREENTIP":   val = ""
+                
+                Case "ENABLED":     val = True
+                Case "ACTION":      Call subMain_ScanUselessFunctions
+            End Select
+        Case "btnCommentOutScanUselessFunctions"
+            Select Case sType
+                Case "LABEL":   val = "Comment Out Useless Func"
+                Case "IMAGE":   val = "ViewPrintLayoutView"
+                Case "SIZE":        val = "false"    'large=true, normal=false
+                Case "SHOW_IMAGE":  val = "true"
+                Case "SUPERTIP":    val = ""
+                Case "SUPERTIP":    val = ""
+                Case "SCREENTIP":   val = ""
+                
+                Case "ENABLED":     val = True
+                Case "ACTION":      Call subMain_CommentOutScanUselessFunctions
+            End Select
     End Select
 End Function
 

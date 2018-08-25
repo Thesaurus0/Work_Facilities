@@ -1,10 +1,11 @@
 Attribute VB_Name = "MB_0_RibbonButton"
 Option Explicit
 Option Base 1
- 
-  
+
 Sub subMain_OpenAcitveWorkbookLocation()
     If Workbooks.Count <= 0 Then Exit Sub
+    
+    If Len(ActiveWorkbook.Path) <= 0 Then Exit Sub
     
     Call fOpenAcitveWorkbookLocation
 End Sub

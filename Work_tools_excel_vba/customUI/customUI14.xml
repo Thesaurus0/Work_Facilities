@@ -35,7 +35,7 @@
 				<group id="grpSheetOpr" label="Sheet Operation"> 
 					<button id="btnShowAllVeryHideSheets" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
 				</group>
-				<group id="grpSourceCode" label="Synchronize"> 
+				<group id="grpSourceCode" label="Synchronize By Function"> 
 					<button id="btnExportSourceCode" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
 					<button id="btnValidateLocalSourceCodeFile" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
 					<button id="btnValidateMacroWithLocal" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
@@ -54,7 +54,10 @@
 					<button id="btnListAllSheetName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
 					<button id="btnListAllSheetCodeName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
 				</group>
-				
+				<group id="grpScanSourceCode" label="Scan Source Code"> 
+					<button id="btnScanUselessFunctions" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnCommentOutScanUselessFunctions" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+				</group> 
 				<group id="grpMisc" label="Misc"> 
 					<button id="btnResetOnError" label="Rest On Error" size="normal" imageMso="ControlToolboxOutlook" onAction="btnResetOnError_onAction" />
 					<button id="btnListAllActiveXOnCurrSheet" label="List ActiveX On Sheet" size="normal" imageMso="ModuleInsert" onAction="btnListAllActiveXOnCurrSheet_onAction"  />

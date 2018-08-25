@@ -1082,68 +1082,68 @@ reset_excel_options:
 End Sub
 
 Sub subMain_SyncWithCommonLib()
-'    Dim sTargetMacro As String
-'    Dim wbTarget As Workbook
-'    Dim arrLibFiles
-'    Dim dictCommonModules As Dictionary
-'    Dim dictIgnore As Dictionary
-'    Dim response As VbMsgBoxResult
-'    Dim i As Integer
-'    Dim sModuleFileFullPath As String
-'    Dim sModuleName As String
-'
-'    On Error GoTo error_handling
-'
-'    Call fInitialization
-'
-'    Call fSetSavedValue(RANGE_SyncWithCommLibWhichFunction, "SYNC_WITH_COMMON_LIB")
-'    FrmSyncModulesFromLibFiles.Show
-'    If gsRtnValueOfForm <> CONST_SUCCESS Then fErr
-'    ThisWorkbook.Save
-'
-'    sTargetMacro = fGetSavedValue(RANGE_TargetMacroToSyncWithCommLib)
-'    Set wbTarget = fOpenWorkbook(sTargetMacro, , , , , False)
-'    Call fWorkbookVBProjectIsProteced(wbTarget)
-'
-'    'sCommLibFolder = fGetSavedValue(RANGE_CommonLibFolderSelected)
-'    arrLibFiles = Split(fGetSavedValue(RANGE_CommonLibFilesSelected), vbCrLf)
-'    Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget, dictIgnore)
-'    Erase arrLibFiles
-'
-'    If dictIgnore.Count > 0 Then
-'        response = MsgBox("Some of the library file you provided are not found in the macro, so they will be ingored, to continue?" & vbCr & vbCr & Join(dictIgnore.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
-'        If response <> vbYes Then fErr
-'    End If
-'    If dictCommonModules.Count > 0 Then
-'        response = MsgBox("The modules below are going to replace the existing ones, are you sure to continue?" & vbCr & vbCr & Join(dictCommonModules.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
-'        If response <> vbYes Then fErr
-'    Else
-'        fErr "No modules are found in the macro matching the provided common lib files"
-'    End If
-'
-'    For i = 0 To dictCommonModules.Count - 1
-'        sModuleFileFullPath = dictCommonModules.Keys(i)
-'        sModuleName = dictCommonModules.Items(i)
-'
-'        'Call fRemoveDeleteModuleIfExists(wbTarget, sModuleName)
-'
-'        Call fImportModuleToWorkbookFromSourceCodeFile(wbTarget, sModuleFileFullPath, sModuleName)
-'    Next
-'
-'error_handling:
-''    Erase arrFileLines
-''    Set dictFunsInFile = Nothing
-'    Set wbTarget = Nothing
-'    Set dictCommonModules = Nothing
-'    Set dictIgnore = Nothing
-'
-'    If gErrNum <> 0 Then GoTo reset_excel_options
-'
-'    If fCheckIfUnCapturedExceptionAbnormalError Then GoTo reset_excel_options
-'    fMsgBox "done.", vbInformation
-'reset_excel_options:
-'    Err.Clear
-'    fClearGlobalVarialesResetOption
+    Dim sTargetMacro As String
+    Dim wbTarget As Workbook
+    Dim arrLibFiles
+    Dim dictCommonModules As Dictionary
+    Dim dictIgnore As Dictionary
+    Dim response As VbMsgBoxResult
+    Dim i As Integer
+    Dim sModuleFileFullPath As String
+    Dim sModuleName As String
+
+    On Error GoTo error_handling
+
+    Call fInitialization
+
+    Call fSetSavedValue(RANGE_SyncWithCommLibWhichFunction, "SYNC_WITH_COMMON_LIB")
+    FrmSyncModulesFromLibFiles.Show
+    If gsRtnValueOfForm <> CONST_SUCCESS Then fErr
+    ThisWorkbook.Save
+
+    sTargetMacro = fGetSavedValue(RANGE_TargetMacroToSyncWithCommLib)
+    Set wbTarget = fOpenWorkbook(sTargetMacro, , , , , False)
+    Call fWorkbookVBProjectIsProteced(wbTarget)
+
+    'sCommLibFolder = fGetSavedValue(RANGE_CommonLibFolderSelected)
+    arrLibFiles = Split(fGetSavedValue(RANGE_CommonLibFilesSelected), vbCrLf)
+    Set dictCommonModules = fFilterCommonLibFilesWithMacro(arrLibFiles, wbTarget, dictIgnore)
+    Erase arrLibFiles
+
+    If dictIgnore.Count > 0 Then
+        response = MsgBox("Some of the library file you provided are not found in the macro, so they will be ingored, to continue?" & vbCr & vbCr & Join(dictIgnore.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
+        If response <> vbYes Then fErr
+    End If
+    If dictCommonModules.Count > 0 Then
+        response = MsgBox("The modules below are going to replace the existing ones, are you sure to continue?" & vbCr & vbCr & Join(dictCommonModules.Items, vbCr), vbYesNo + vbQuestion + vbDefaultButton1)
+        If response <> vbYes Then fErr
+    Else
+        fErr "No modules are found in the macro matching the provided common lib files"
+    End If
+
+    For i = 0 To dictCommonModules.Count - 1
+        sModuleFileFullPath = dictCommonModules.Keys(i)
+        sModuleName = dictCommonModules.Items(i)
+
+        'Call fRemoveDeleteModuleIfExists(wbTarget, sModuleName)
+
+        Call fImportModuleToWorkbookFromSourceCodeFile(wbTarget, sModuleFileFullPath, sModuleName)
+    Next
+
+error_handling:
+'    Erase arrFileLines
+'    Set dictFunsInFile = Nothing
+    Set wbTarget = Nothing
+    Set dictCommonModules = Nothing
+    Set dictIgnore = Nothing
+
+    If gErrNum <> 0 Then GoTo reset_excel_options
+
+    If fCheckIfUnCapturedExceptionAbnormalError Then GoTo reset_excel_options
+    fMsgBox "done.", vbInformation
+reset_excel_options:
+    Err.Clear
+    fClearGlobalVarialesResetOption
 End Sub
 
 Function fImportModuleToWorkbookFromSourceCodeFile(wbTarget As Workbook, sModuleFileFullPath As String, Optional asModuleName As String)
@@ -1288,3 +1288,54 @@ Function fReadModuleNameFromSourceCodeFile(sLibFile As String) As String
     If Len(sModuleName) <= 0 Then fErr "the source code file is invalid, becase the module name cannot be detected"
     fReadModuleNameFromSourceCodeFile = sModuleName
 End Function
+
+Sub subMain_ScanUselessFunctions()
+    If Workbooks.Count <= 0 Then Exit Sub
+    
+    Dim wbTarget As Workbook
+    Set wbTarget = ActiveWorkbook
+    
+    Call fScanUselessFunctions(wbTarget)
+    
+    Set wbTarget = Nothing
+End Sub
+
+Sub subMain_CommentOutScanUselessFunctions()
+    If Workbooks.Count <= 0 Then Exit Sub
+    
+    Dim wbTarget As Workbook
+    Set wbTarget = ActiveWorkbook
+    
+    'Call fCommentOutUselessFunctions(wbTarget)
+    
+    Set wbTarget = Nothing
+End Sub
+
+Function fScanUselessFunctions(wbTarget As Workbook)
+    
+    
+    On Error GoTo error_handling
+    
+    Call fInitialization
+    
+    
+    
+    
+    
+error_handling:
+'    Erase arrFileLines
+'    Set dictFunsInFile = Nothing
+    Set vbP = Nothing
+    Set wbTarget = Nothing
+    Set dictCommonModules = Nothing
+    'Set dictIgnore = Nothing
+    
+    If gErrNum <> 0 Then GoTo reset_excel_options
+    
+    If fCheckIfUnCapturedExceptionAbnormalError Then GoTo reset_excel_options
+    fMsgBox "done.", vbInformation
+reset_excel_options:
+    Err.Clear
+    fClearGlobalVarialesResetOption
+End Function
+
