@@ -1301,7 +1301,7 @@ Function fValidateDuplicateInArrayForCombineCols(arrParam, arrKeyCols _
         If dict.Exists(sKeyStr) Then
             sPos = Replace(sPos, "ACTUAL_ROW_NO", lActualRow)
             fShowSheet shtAt
-            Application.GoTo shtAt.Cells(lActualRow, arrKeyCols(UBound(arrKeyCols)))
+            Application.Goto shtAt.Cells(lActualRow, arrKeyCols(UBound(arrKeyCols)))
             fErr "Duplicate key was found:" & vbCr & sKeyStr & vbCr & sPos
         Else
             dict.Add sKeyStr, 0
@@ -1435,7 +1435,7 @@ Function fValidateDuplicateInArrayForSingleCol(arrParam, lKeyCol As Long _
                 'sPos = sPos & lActualRow & " / " & sColLetter
                 sPos = Replace(sPos, "ACTUAL_ROW_NO", lActualRow)
                 fShowSheet shtAt
-                Application.GoTo shtAt.Cells(lActualRow, lKeyCol)
+                Application.Goto shtAt.Cells(lActualRow, lKeyCol)
                 fErr "Keys [" & sColLetter & "] is blank!" & sPos
             End If
             
@@ -1446,7 +1446,7 @@ Function fValidateDuplicateInArrayForSingleCol(arrParam, lKeyCol As Long _
             'sPos = sPos & lActualRow & " / " & sColLetter
             sPos = Replace(sPos, "ACTUAL_ROW_NO", lActualRow)
             fShowSheet shtAt
-            Application.GoTo shtAt.Cells(lActualRow, lKeyCol)
+            Application.Goto shtAt.Cells(lActualRow, lKeyCol)
             fErr "Duplicate key [" & sKeyStr & "] was found " & sPos
         Else
             dict.Add sKeyStr, 0
@@ -2295,7 +2295,7 @@ Function fTranspose1DimenArrayTo2DimenArrayVertically(arrParam) As Variant
     
     If fArrayIsEmptyOrNoData(arrParam) Then GoTo exit_fun
     
-    If fGetArrayDimension(arrParam) > 1 Then fErr "1 dimension array is allowed."
+    If fGetArrayDimension(arrParam) > 1 Then fErr "more than 1 dimension array is allowed."
     
     ReDim arrOut(1 To fUbound(arrParam), 1 To 1)
     
@@ -2309,7 +2309,27 @@ exit_fun:
     fTranspose1DimenArrayTo2DimenArrayVertically = arrOut
     Erase arrOut
 End Function
-
+Function fTranspose1DimenArrayTo2DimenArrayHorizontal(arrParam) As Variant
+    Dim i As Long
+    Dim iNew As Long
+    Dim arrOut()
+    
+    If fArrayIsEmptyOrNoData(arrParam) Then GoTo exit_fun
+    
+    If fGetArrayDimension(arrParam) > 1 Then fErr "more than 1 dimension array is allowed."
+    
+    ReDim arrOut(1 To 1, 1 To ArrLen(arrParam))
+    
+    iNew = 0
+    For i = LBound(arrParam) To UBound(arrParam)
+        iNew = iNew + 1
+        arrOut(1, iNew) = arrParam(i)
+    Next
+    
+exit_fun:
+    fTranspose1DimenArrayTo2DimenArrayHorizontal = arrOut
+    Erase arrOut
+End Function
 Function fUbound(arr, Optional iDimen As Integer = 1) As Long
     If fArrayIsEmptyOrNoData(arr) Then fUbound = 0: Exit Function
     

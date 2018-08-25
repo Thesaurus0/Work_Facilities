@@ -2347,27 +2347,6 @@ exit_fun:
 
     Debug.Print "fFileterOutTwoDimensionArray: " & Timer - start & vbCr & format(Timer - start, "00:00")
 End Function
-Function fTranspose1DimenArrayTo2DimenArrayVertically(arrParam) As Variant
-    Dim i As Long
-    Dim iNew As Long
-    Dim arrOut()
-
-    If fArrayIsEmptyOrNoData(arrParam) Then GoTo exit_fun
-
-    If fGetArrayDimension(arrParam) > 1 Then fErr "1 dimension array is allowed."
-
-    ReDim arrOut(1 To fUbound(arrParam), 1 To 1)
-
-    iNew = 0
-    For i = LBound(arrParam) To UBound(arrParam)
-        iNew = iNew + 1
-        arrOut(iNew, 1) = arrParam(i)
-    Next
-
-exit_fun:
-    fTranspose1DimenArrayTo2DimenArrayVertically = arrOut
-    Erase arrOut
-End Function
 
 Function fUbound(arr, Optional iDimen As Integer = 1) As Long
     If fArrayIsEmptyOrNoData(arr) Then fUbound = 0: Exit Function
@@ -3864,20 +3843,6 @@ Function fWriteArray2Sheet(sht As Worksheet, arrData, Optional lStartRow As Long
     End If
 
     sht.Cells(lStartRow, lStartCol).Resize(UBound(arrData, 1), UBound(arrData, 2)).Value = arrData
-End Function
-
-Function fAppendArray2Sheet(sht As Worksheet, ByRef arrData, Optional lStartCol As Long = 1, Optional bEraseArray As Boolean = True)
-    If fArrayIsEmptyOrNoData(arrData) Then Exit Function
-
-'    If fGetArrayDimension(arrData) <> 2 Then
-'        fErr "Wrong array to paste to sheet: fGetArrayDimension(arrData) <> 2"
-'    End If
-
-    Dim lFromRow As Long
-    lFromRow = fGetValidMaxRow(sht) + 1
-
-    sht.Cells(lFromRow, lStartCol).Resize(UBound(arrData, 1), UBound(arrData, 2)).Value = arrData
-    If bEraseArray Then Erase arrData
 End Function
 
 Function fAutoFilterAutoFitSheet(sht As Worksheet, Optional alMaxCol As Long = 0 _
@@ -6020,73 +5985,6 @@ Function fDeleteAllConditionFormatForAllSheets(Optional wb As Workbook)
 
     Set sht = Nothing
 End Function
-Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
-                                            , Optional lRowFrom As Long = 2, Optional lRowTo As Long = 0 _
-                                            , Optional arrKeyColsNotBlank _
-                                            , Optional bExtendToMore10ThousRows As Boolean = False)
-'arrKeyColsNotBlank
-'    1. singlecol: 1
-'    1. array(1,2,3)
-    If lMaxCol = 0 Then lMaxCol = fGetValidMaxCol(shtParam)
-    If lRowTo = 0 Then lRowTo = fGetValidMaxRow(shtParam)
-
-    If lMaxCol <= 0 Then Exit Function
-
-    If bExtendToMore10ThousRows Then lRowTo = lRowTo + 100000
-
-    If lRowTo < lRowFrom Then Exit Function
-
-    Dim rngCondFormat As Range
-    Set rngCondFormat = fGetRangeByStartEndPos(shtParam, lRowFrom, 1, lRowTo, lMaxCol)
-
-    Dim sAddr As String
-    Dim sKeyColsFormula As String
-    Dim sFormula As String
-    Dim lColor As Long
-    Dim i As Integer
-    Dim sColLetter As String
-    Dim aFormatCondition As FormatCondition
-
-    If Not IsMissing(arrKeyColsNotBlank) Then
-        If IsArray(arrKeyColsNotBlank) Then
-            For i = LBound(arrKeyColsNotBlank) To UBound(arrKeyColsNotBlank)
-                sColLetter = fNum2Letter(arrKeyColsNotBlank(i))
-                sKeyColsFormula = sKeyColsFormula & "," & "len(trim($" & sColLetter & lRowFrom & ")) > 0"
-            Next
-            If Len(sKeyColsFormula) > 0 Then sKeyColsFormula = Right(sKeyColsFormula, Len(sKeyColsFormula) - 1)
-            'sKeyColsFormula = sKeyColsFormula & ","
-        Else
-            sColLetter = fNum2Letter(arrKeyColsNotBlank)
-            sKeyColsFormula = "len(trim($" & sColLetter & lRowFrom & ")) > 0"
-            sKeyColsFormula = sKeyColsFormula
-        End If
-    Else
-        sKeyColsFormula = ""
-    End If
-
-    sFormula = "=And( " & sKeyColsFormula & "mod(row(),2)=0)"
-
-    Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
-    aFormatCondition.SetFirstPriority
-    aFormatCondition.StopIfTrue = False
-
-    'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_EVEN_LINE_COLOR")
-    sAddr = fGetSysMiscConfig("REPORT_EVEN_LINE_COLOR")
-    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
-    aFormatCondition.Interior.Color = lColor
-
-    sFormula = "=And( " & sKeyColsFormula & "mod(row(),2)<>0)"
-    Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
-    aFormatCondition.SetFirstPriority
-    aFormatCondition.StopIfTrue = False
-
-    'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_ODD_LINE_COLOR")
-    sAddr = fGetSysMiscConfig("REPORT_ODD_LINE_COLOR")
-    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
-    aFormatCondition.Interior.Color = lColor
-
-    Set aFormatCondition = Nothing
-End Function
 
 Function fSetFormatBoldOrangeBorderForHeader(ByRef sht As Worksheet, Optional lMaxCol As Long = 0 _
                                             , Optional lHeaderRowFrom As Long = 1, Optional lHeaderRowTo As Long = 1 _
@@ -7450,7 +7348,7 @@ End Function
 Function fClearConditionFormatAndAdd(sht As Worksheet, arrKeysCols, Optional bExtendToMore10ThousRows As Boolean = True)
     Call fDeleteAllConditionFormatFromSheet(sht)
     Call fSetConditionFormatForOddEvenLine(sht, , , , arrKeysCols, bExtendToMore10ThousRows)
-    Call fSetConditionFormatForBorders(sht, , , , arrKeysCols, bExtendToMore10ThousRows)
+    Call fSetConditionFormatForBorder(sht, , , , arrKeysCols, bExtendToMore10ThousRows)
 End Function
 
 Private Sub Workbook_Open()
@@ -7464,7 +7362,7 @@ Sub sub_WorkBookInitialization()
     '=========================================================
     Call fDeleteAllConditionFormatFromSheet(shtBillIn)
     Call fSetConditionFormatForOddEvenLine(shtBillIn, , , , Array(BillIn.FromCompany), True)
-    Call fSetConditionFormatForBorders(shtBillIn, , , , Array(BillIn.FromCompany), True)
+    Call fSetConditionFormatForBorder(shtBillIn, , , , Array(BillIn.FromCompany), True)
 
     Call fSetValidationForNumberRange(fGetRangeByStartEndPos(shtBillIn, 2, BillIn.Amount, Rows.Count, BillIn.Amount), 0, 999999999)
 
@@ -7472,7 +7370,7 @@ Sub sub_WorkBookInitialization()
     '=========================================================
     Call fDeleteAllConditionFormatFromSheet(shtBillOut)
     Call fSetConditionFormatForOddEvenLine(shtBillOut, , , , Array(BillOut.toCompany), True)
-    Call fSetConditionFormatForBorders(shtBillOut, , , , Array(BillOut.toCompany), True)
+    Call fSetConditionFormatForBorder(shtBillOut, , , , Array(BillOut.toCompany), True)
 
     Call fSetValidationForNumberRange(fGetRangeByStartEndPos(shtBillOut, 2, BillOut.Amount, Rows.Count, BillOut.Amount), 0, 999999999)
 
@@ -7480,7 +7378,7 @@ Sub sub_WorkBookInitialization()
     '=========================================================
     Call fDeleteAllConditionFormatFromSheet(shtBusinessDetails)
    ' Call fSetConditionFormatForOddEvenLine(shtBusinessDetails, , shtBusinessDetails.DataStartRow, , Array(BuzDetail.VendorName, BuzDetail.PLATFORM), True)
-    Call fSetConditionFormatForBorders(shtBusinessDetails, , shtBusinessDetails.DataStartRow, , Array(BuzDetail.VendorName, BuzDetail.PLATFORM), True)
+    Call fSetConditionFormatForBorder(shtBusinessDetails, , shtBusinessDetails.DataStartRow, , Array(BuzDetail.VendorName, BuzDetail.PLATFORM), True)
 
     Call fSetValidationForNumberRange(fGetRangeByStartEndPos(shtBusinessDetails, shtBusinessDetails.DataStartRow, BuzDetail.Point_Qty, Rows.Count, BuzDetail.Point_Qty), 0, 999999999)
     Call fSetValidationForNumberRange(fGetRangeByStartEndPos(shtBusinessDetails, shtBusinessDetails.DataStartRow, BuzDetail.Point_Price, Rows.Count, BuzDetail.Point_Price), 0, 999999999)
@@ -8408,7 +8306,7 @@ Function ArrLen(arrParam, Optional iDimension As Integer = 1) As Long
     ArrLen = UBound(arrParam, iDimension) - LBound(arrParam, iDimension) + 1
 End Function
 
-Function fSetConditionFormatForBorders(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
+Function fSetConditionFormatForBorder(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
                                             , Optional lRowFrom As Long = 2, Optional lRowTo As Long = 0 _
                                             , Optional arrKeyColsNotBlank _
                                             , Optional bExtendToMore10ThousRows As Boolean = False)
@@ -8463,19 +8361,6 @@ Function fSetConditionFormatForBorders(ByRef shtParam As Worksheet, Optional lMa
 
     Set aFormatCondition = Nothing
 End Function
-Function fAppendArray2Sheet(sht As Worksheet, ByRef arrData, Optional lStartCol As Long = 1, Optional bEraseArray As Boolean = True)
-    If fArrayIsEmptyOrNoData(arrData) Then Exit Function
-    
-'    If fGetArrayDimension(arrData) <> 2 Then
-'        fErr "Wrong array to paste to sheet: fGetArrayDimension(arrData) <> 2"
-'    End If
-    
-    Dim lFromRow As Long
-    lFromRow = fGetValidMaxRow(sht) + 1
-    
-    sht.Cells(lFromRow, lStartCol).Resize(ArrLen(arrData, 1), ArrLen(arrData, 2)).value = arrData
-    If bEraseArray Then Erase arrData
-End Function
 
 Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
                                             , Optional lRowFrom As Long = 2, Optional lRowTo As Long = 0 _
@@ -8486,16 +8371,16 @@ Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional
 '    1. array(1,2,3)
     If lMaxCol = 0 Then lMaxCol = fGetValidMaxCol(shtParam)
     If lRowTo = 0 Then lRowTo = fGetValidMaxRow(shtParam)
-    
+
     If lMaxCol <= 0 Then Exit Function
-    
+
     If bExtendToMore10ThousRows Then lRowTo = lRowTo + 100000
 
     If lRowTo < lRowFrom Then Exit Function
-    
+
     Dim rngCondFormat As Range
     Set rngCondFormat = fGetRangeByStartEndPos(shtParam, lRowFrom, 1, lRowTo, lMaxCol)
-    
+
     Dim sAddr As String
     Dim sKeyColsFormula As String
     Dim sFormula As String
@@ -8503,7 +8388,7 @@ Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional
     Dim i As Integer
     Dim sColLetter As String
     Dim aFormatCondition As FormatCondition
-    
+
     If Not IsMissing(arrKeyColsNotBlank) Then
         If IsArray(arrKeyColsNotBlank) Then
             For i = LBound(arrKeyColsNotBlank) To UBound(arrKeyColsNotBlank)
@@ -8511,7 +8396,7 @@ Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional
                 sKeyColsFormula = sKeyColsFormula & "," & "len(trim($" & sColLetter & lRowFrom & ")) > 0"
             Next
             If Len(sKeyColsFormula) > 0 Then sKeyColsFormula = Right(sKeyColsFormula, Len(sKeyColsFormula) - 1)
-            sKeyColsFormula = sKeyColsFormula
+           ' sKeyColsFormula = sKeyColsFormula
         Else
             sColLetter = fNum2Letter(arrKeyColsNotBlank)
             sKeyColsFormula = "len(trim($" & sColLetter & lRowFrom & ")) > 0"
@@ -8520,46 +8405,96 @@ Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional
     Else
         sKeyColsFormula = ""
     End If
-    
+
     sFormula = "=And( " & sKeyColsFormula & ", mod(row(),2)=0)"
-    
+
     Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
     aFormatCondition.SetFirstPriority
     aFormatCondition.StopIfTrue = False
-    
+
     'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_EVEN_LINE_COLOR")
     sAddr = fGetSysMiscConfig("REPORT_EVEN_LINE_COLOR")
     lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
     aFormatCondition.Interior.Color = lColor
-    
+
     sFormula = "=And( " & sKeyColsFormula & ", mod(row(),2)<>0)"
     Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
     aFormatCondition.SetFirstPriority
     aFormatCondition.StopIfTrue = False
-    
+
     'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_ODD_LINE_COLOR")
     sAddr = fGetSysMiscConfig("REPORT_ODD_LINE_COLOR")
     lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
     aFormatCondition.Interior.Color = lColor
-    
+
     Set aFormatCondition = Nothing
 End Function
 
-
 Function fAppendArray2Sheet(sht As Worksheet, ByRef arrData, Optional lStartCol As Long = 1, Optional alStartRow As Long = 0, Optional bEraseArray As Boolean = True)
     If fArrayIsEmptyOrNoData(arrData) Then Exit Function
-    
+
 '    If fGetArrayDimension(arrData) <> 2 Then
 '        fErr "Wrong array to paste to sheet: fGetArrayDimension(arrData) <> 2"
 '    End If
-    
+
     Dim lFromRow As Long
     If alStartRow <= 0 Then
         lFromRow = fGetValidMaxRow(sht) + 1
     Else
         lFromRow = alStartRow
     End If
-    
+
     sht.Cells(lFromRow, lStartCol).Resize(ArrLen(arrData, 1), ArrLen(arrData, 2)).value = arrData
     If bEraseArray Then Erase arrData
+End Function
+Function fTranspose1DimenArrayTo2DimenArrayVertically(arrParam) As Variant
+    Dim i As Long
+    Dim iNew As Long
+    Dim arrOut()
+
+    If fArrayIsEmptyOrNoData(arrParam) Then GoTo exit_fun
+
+    If fGetArrayDimension(arrParam) > 1 Then fErr "more than 1 dimension array is allowed."
+
+    ReDim arrOut(1 To fUbound(arrParam), 1 To 1)
+
+    iNew = 0
+    For i = LBound(arrParam) To UBound(arrParam)
+        iNew = iNew + 1
+        arrOut(iNew, 1) = arrParam(i)
+    Next
+
+exit_fun:
+    fTranspose1DimenArrayTo2DimenArrayVertically = arrOut
+    Erase arrOut
+End Function
+Function fTranspose1DimenArrayTo2DimenArrayHorizontal(arrParam) As Variant
+    Dim i As Long
+    Dim iNew As Long
+    Dim arrOut()
+    
+    If fArrayIsEmptyOrNoData(arrParam) Then GoTo exit_fun
+    
+    If fGetArrayDimension(arrParam) > 1 Then fErr "more than 1 dimension array is allowed."
+    
+    ReDim arrOut(1 To 1, 1 To ArrLen(arrParam))
+    
+    iNew = 0
+    For i = LBound(arrParam) To UBound(arrParam)
+        iNew = iNew + 1
+        arrOut(1, iNew) = arrParam(i)
+    Next
+    
+exit_fun:
+    fTranspose1DimenArrayTo2DimenArrayHorizontal = arrOut
+    Erase arrOut
+End Function
+
+Function fWriteHeaderToSheet(sht As Worksheet, arrHeaders(), Optional alHeaderAtRow As Long = 1, Optional alHeaderFromCol As Long = 1)
+    sht.Cells(alHeaderAtRow, alHeaderFromCol).Resize(1, ArrLen(arrHeaders)).value = fTranspose1DimenArrayTo2DimenArrayHorizontal(arrHeaders)
+    
+    Call fSetFormatBoldOrangeBorderForRangeEspeciallyForHeader(fGetRangeByStartEndPos(sht, 1, 1, 1, ArrLen(arrHeaders)))
+    Call fSetConditionFormatForBorder(sht, , , , 1, True)
+    
+    sht.Columns.AutoFit
 End Function

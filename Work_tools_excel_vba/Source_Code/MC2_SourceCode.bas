@@ -1,5 +1,6 @@
 Attribute VB_Name = "MC2_SourceCode"
 Option Explicit
+Option Base 1
 
 Sub subMain_ValidateMacroWithLocal(Optional wb As Workbook)
     Dim sFileProp As String
@@ -1312,22 +1313,68 @@ Sub subMain_CommentOutScanUselessFunctions()
 End Sub
 
 Function fScanUselessFunctions(wbTarget As Workbook)
-    
+    Dim sTmpOutput As String
+    Dim shtOutput As Worksheet
+    Dim lMaxRow As Long
+    Dim arrHeader()
     
     On Error GoTo error_handling
     
     Call fInitialization
     
+    sTmpOutput = "tmpOutput_ScanSourceCode"
+    arrHeader = Array("Module", "Top Sub/Functions to exclude", "", "Exception Module", "Sub/Functions not being called", "Sub/Function Scope", "From Line", "To Line")
     
+    If fSheetExists(sTmpOutput, shtOutput, wbTarget) Then
+        Call fShowAndActiveSheet(shtOutput)
+        
+        If Not (Not fFindInWorksheet(shtOutput.Cells, CStr(arrHeader(1)), False, True) Is Nothing _
+              And Not fFindInWorksheet(shtOutput.Cells, CStr(arrHeader(2)), False, True) Is Nothing _
+              And Not fFindInWorksheet(shtOutput.Cells, CStr(arrHeader(4)), False, True) Is Nothing _
+              And Not fFindInWorksheet(shtOutput.Cells, CStr(arrHeader(5)), False, True) Is Nothing _
+              And Not fFindInWorksheet(shtOutput.Cells, CStr(arrHeader(6)), False, True) Is Nothing _
+              And Not fFindInWorksheet(shtOutput.Cells, CStr(arrHeader(7)), False, True) Is Nothing _
+              And Not fFindInWorksheet(shtOutput.Cells, CStr(arrHeader(8)), False, True) Is Nothing) Then
+            If MsgBox("There is an existing sheet " & shtOutput.Name & ", to overwrite it, please press Yes" _
+                    , vbYesNoCancel + vbCritical + vbDefaultButton1, vbQuestion) = vbYes Then
+                shtOutput.Cells.Delete
+                Call fWriteHeaderToSheet(shtOutput, arrHeader)
+                MsgBox "Please input, and click the button again.", vbInformation
+                GoTo error_handling
+            Else
+                fErr
+            End If
+        Else
+            lMaxRow = fGetValidMaxRow(shtOutput)
+            fGetRangeByStartEndPos(shtOutput, 2, 4, lMaxRow + 2, 15).ClearContents
+            fGetRangeByStartEndPos(shtOutput, 2, 4, lMaxRow + 2, 15).ClearFormats
+        End If
+    Else
+        Set shtOutput = fAddNewSheet(sTmpOutput, wbTarget)
+        Call fFreezeSheet(shtOutput)
+        
+        Call fWriteHeaderToSheet(shtOutput, arrHeader)
+        
+        MsgBox "Please input, and click the button again.", vbInformation
+        GoTo error_handling
+    End If
     
+    Dim arrOut()
     
+    arrOut = fScanSourceCodeToFindUncalledFunctions(wbTarget)
     
+    If ArrLen(arrOut) > 0 Then
+        shtOutput.Cells(2, 4).Resize(ArrLen(arrOut), 5).value = arrOut
+        Erase arrOut
+    End If
+    
+    shtOutput.Columns.AutoFit
 error_handling:
 '    Erase arrFileLines
 '    Set dictFunsInFile = Nothing
-    Set vbP = Nothing
     Set wbTarget = Nothing
-    Set dictCommonModules = Nothing
+    Set shtOutput = Nothing
+    'Set dictCommonModules = Nothing
     'Set dictIgnore = Nothing
     
     If gErrNum <> 0 Then GoTo reset_excel_options
@@ -1339,3 +1386,11 @@ reset_excel_options:
     fClearGlobalVarialesResetOption
 End Function
 
+Function fWriteHeaderToSheet(sht As Worksheet, arrHeaders(), Optional alHeaderAtRow As Long = 1, Optional alHeaderFromCol As Long = 1)
+    sht.Cells(alHeaderAtRow, alHeaderFromCol).Resize(1, ArrLen(arrHeaders)).value = fTranspose1DimenArrayTo2DimenArrayHorizontal(arrHeaders)
+    
+    Call fSetFormatBoldOrangeBorderForRangeEspeciallyForHeader(fGetRangeByStartEndPos(sht, 1, 1, 1, ArrLen(arrHeaders)))
+    Call fSetConditionFormatForBorder(sht, , , , 1, True)
+    
+    sht.Columns.AutoFit
+End Function

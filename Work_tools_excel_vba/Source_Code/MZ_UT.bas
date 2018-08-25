@@ -96,7 +96,7 @@ Sub AllUnitTest()
    ' Call fConvertFomulaToValueForSheetIfAny(ActiveSheet)
    fDeleteAllConditionFormatFromSheet ActiveSheet
    Call fSetConditionFormatForOddEvenLine(ActiveSheet, , , , Array(1), True)
-   Call fSetConditionFormatForBorders(ActiveSheet, , , , Array(1), True)
+   Call fSetConditionFormatForBorder(ActiveSheet, , , , Array(1), True)
 End Sub
 
 Sub testa()

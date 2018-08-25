@@ -1496,7 +1496,7 @@ Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional
     Set aFormatCondition = Nothing
 End Function
 
-Function fSetConditionFormatForBorders(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
+Function fSetConditionFormatForBorder(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
                                             , Optional lRowFrom As Long = 2, Optional lRowTo As Long = 0 _
                                             , Optional arrKeyColsNotBlank _
                                             , Optional bExtendToMore10ThousRows As Boolean = False)
@@ -1562,13 +1562,12 @@ Function fSetFormatBoldOrangeBorderForRangeEspeciallyForHeader(ByRef rgTarget As
     Dim lColor As Long
     Dim sAddr As String
     
-    'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_HEADER_LINE_COLOR")
-    sAddr = fGetSysMiscConfig("REPORT_HEADER_LINE_COLOR")
-    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
+'    sAddr = fGetSysMiscConfig("REPORT_HEADER_LINE_COLOR")
+'    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
     
     With rgTarget
         .Font.Bold = True
-        .Interior.Color = lColor
+        .Interior.Color = 8696052 'lColor
         
         .Borders(xlDiagonalDown).LineStyle = xlNone
         .Borders(xlDiagonalUp).LineStyle = xlNone
