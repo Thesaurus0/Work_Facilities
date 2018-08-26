@@ -5650,10 +5650,11 @@ next_col:
 End Function
 
 Function fSaveWorkBookNotClose(wb As Workbook)
-    wb.Saved = True
-    wb.Close savechanges:=False
-    Set wb = Nothing
+    wb.CheckCompatibility = False
+    wb.Save
+    wb.CheckCompatibility = True
 End Function
+
 'Function fCloseWorkBookWithoutSave(wb As Workbook)
 '    wb.CheckCompatibility = False
 '    wb.Save
@@ -8498,3 +8499,101 @@ Function fWriteHeaderToSheet(sht As Worksheet, arrHeaders(), Optional alHeaderAt
     
     sht.Columns.AutoFit
 End Function
+
+Function fGenBackupFileNameByTimeStamp(sFileName As String, Optional KeepFileExtAtTheEnd As Boolean = True) As String
+    Dim sOut As String
+    
+    If KeepFileExtAtTheEnd Then
+        sOut = fGetFileNetName(sFileName, True) & Format(Now(), "_YYYYMMDD_HHMMSS") & fGetFileExtension(sFileName, True)
+    Else
+        sOut = sFileName & Format(Now(), ".YYYYMMDD_HHMMSS")
+    End If
+    
+    fGenBackupFileNameByTimeStamp = sOut
+End Function
+
+Function fGenBackupFileNameByTimeStamp(sFileName As String, Optional KeepFileExtAtTheEnd As Boolean = True) As String
+    Dim sOut As String
+    
+    If KeepFileExtAtTheEnd Then
+        sOut = fGetFileNetName(sFileName, True) & Format(Now(), "_YYYYMMDD_HHMMSS") & fGetFileExtension(sFileName, True)
+    Else
+        sOut = sFileName & Format(Now(), ".YYYYMMDD_HHMMSS")
+    End If
+    
+    fGenBackupFileNameByTimeStamp = sOut
+End Function
+
+
+Function fWorkbookVBProjectIsProteced(Optional wbTarget As Workbook) As Boolean
+    If wbTarget Is Nothing Then Set wbTarget = ActiveWorkbook
+    
+    If wbTarget.VBProject.Protection = vbext_pp_locked Then
+        fErr "The VBA is the workbook is protected, please opend it manually, then rerun it"
+    End If
+End Function
+
+
+Function fFolderHasFileOlderThan(sFolder As String, iOlderThanDaysNum As Long) As Boolean
+    Dim aFile As File
+    
+    fFolderHasFileOlderThan = False
+    
+    fGetFSO
+    
+    If gFSO.FolderExists(sFolder) Then
+        For Each aFile In gFSO.GetFolder(sFolder)
+            If DateDiff("d", aFile.DateLastModified, Now()) > iOlderThanDaysNum Then
+                fFolderHasFileOlderThan = True
+                Exit For
+            End If
+        Next
+    End If
+    
+    Set aFile = Nothing
+End Function
+
+
+Function fDeleteOldFilesOlderThan(sFolder As String, iOlderThanDaysNum As Long)
+    Dim aFile As File
+    
+    fGetFSO
+    
+    If gFSO.FolderExists(sFolder) Then
+        For Each aFile In gFSO.GetFolder(sFolder)
+            If DateDiff("d", aFile.DateLastModified, Now()) > iOlderThanDaysNum Then
+                aFile.Delete
+                Exit For
+            End If
+        Next
+    End If
+    
+    Set aFile = Nothing
+End Function
+
+Function fFolderHasFileOlderThan(sFolder As String, iOlderThanDaysNum As Long) As Boolean
+    Dim aFile As File
+    
+    fFolderHasFileOlderThan = False
+    
+    fGetFSO
+    
+    If gFSO.FolderExists(sFolder) Then
+        For Each aFile In gFSO.GetFolder(sFolder)
+            If DateDiff("d", aFile.DateLastModified, Now()) > iOlderThanDaysNum Then
+                fFolderHasFileOlderThan = True
+                Exit For
+            End If
+        Next
+    End If
+    
+    Set aFile = Nothing
+End Function
+
+
+Function fBackupFile(ByVal sSourceFile As String, ByVal sBackupToFile As String, Optional overwritingExisting As Boolean = True)
+    fGetFSO
+    
+    Call gFSO.CopyFile(sSourceFile, sBackupToFile, overwritingExisting)
+End Function
+

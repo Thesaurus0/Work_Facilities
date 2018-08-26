@@ -1386,6 +1386,98 @@ reset_excel_options:
     fClearGlobalVarialesResetOption
 End Function
 
+Function fScanSourceCodeToFindUncalledFunctions(Optional wb As Workbook)
+    Dim vbP As VBIDE.VBProject
+    Dim vbComp As VBIDE.VBComponent
+    Dim codeM As VBIDE.CodeModule
+    Dim prodKind As VBIDE.vbext_ProcKind
+    Dim sModuleUserInput 'As String
+    
+    If wb Is Nothing Then
+        Set vbP = ActiveWorkbook.VBProject
+    Else
+        Set vbP = wb.VBProject
+    End If
+    
+    sModuleUserInput = InputBox("You count input the module if you want to scan one module by one module " & vbCr & "press cancel to scan all modules", "one module by one module", fGetSavedValue(RANGE_ScanUselessOnebyOneModule))
+    sModuleUserInput = Trim(sModuleUserInput)
+    
+    If Len(sModuleUserInput) > 0 Then
+        If Not fModuleExistsInMacro(CStr(sModuleUserInput), wb) Then
+            fErr "the module you input does not exists, please check: " & sModuleUserInput
+        End If
+        
+        Call fSetSavedValue(RANGE_ScanUselessOnebyOneModule, sModuleUserInput)
+    End If
+    
+    Dim dictExclude As Dictionary
+    Dim dictIsolated As Dictionary
+    Dim dictFunList As Dictionary
+    Dim sSubFunName As String
+    Dim i As Long
+    Dim sSubFunProp As String
+    Dim sModuleName As String
+    
+    Set dictExclude = fReadExcludeModuleFunList(ActiveSheet)
+    Set dictIsolated = New Dictionary
+    
+    For Each vbComp In vbP.VBComponents
+        If Len(sModuleUserInput) > 0 Then
+            If UCase(vbComp.Name) <> UCase(sModuleUserInput) Then GoTo next_module
+        End If
+        
+        Set codm = vbComp.CodeModule
+        sModuleType = fGetComponentTypeToString(vbComp.Type)
+        
+        Set dictFunList = fGetAllSubFunctionsOfAModule(vbComp)
+        
+        For i = 0 To dictFunList.Count - 1
+            sSubFunName = dictFunList.Keys(i)
+            sSubFunProp = dictFunList.Items(i)
+'            lStartLine = Split(sSubFunProp, DELIMITER)(2)
+'            lEndLine = Split(sSubFunProp, DELIMITER)(3)
+            
+            If sSubFunName = "" Then
+            ElseIf dictExclude.Exists(sModuleName & DELIMITER & sSubFunName) Then
+                GoTo next_module
+            End If
+        Next
+next_module:
+    Next
+    
+    Set dictExclude = Nothing
+    Set dictIsolated = Nothing
+    Set vbP = Nothing
+End Function
+
+Function fReadExcludeModuleFunList(sht As Worksheet) As Dictionary
+    Dim dictOut As Dictionary
+    Dim lMaxRow As Long
+    Dim lEachRow As Long
+    Dim arrData()
+    
+    lMaxRow = fGetValidMaxRow(sht)
+    
+    Set dictOut = New Dictionary
+    
+    If lMaxRow > 2 Then
+        arrData = fReadRangeDatatoArrayByStartEndPos(sht, 2, 1, lMaxRow, 2)
+        
+        For lEachRow = LBound(arrData, 1) To UBound(arrData, 1)
+            sModule = Trim(arrData(lEachRow, 1))
+            sfun = Trim(arrData(lEachRow, 2))
+            
+            If Len(sModule) > 0 And Len(sfun) > 0 Then
+                If Not dictOut.Exists(sModule & DELIMITER & sfun) Then dictOut.Add sModule & DELIMITER & sfun, ""
+            End If
+        Next
+    End If
+    
+    Erase arrData
+    Set fReadExcludeModuleFunList = dictOut
+    Set dictOut = Nothing
+End Function
+
 Function fWriteHeaderToSheet(sht As Worksheet, arrHeaders(), Optional alHeaderAtRow As Long = 1, Optional alHeaderFromCol As Long = 1)
     sht.Cells(alHeaderAtRow, alHeaderFromCol).Resize(1, ArrLen(arrHeaders)).value = fTranspose1DimenArrayTo2DimenArrayHorizontal(arrHeaders)
     

@@ -1093,9 +1093,9 @@ next_col:
 End Function
 
 Function fSaveWorkBookNotClose(wb As Workbook)
-    wb.Saved = True
-    wb.Close savechanges:=False
-    Set wb = Nothing
+    wb.CheckCompatibility = False
+    wb.Save
+    wb.CheckCompatibility = True
 End Function
 'Function fCloseWorkBookWithoutSave(wb As Workbook)
 '    wb.CheckCompatibility = False

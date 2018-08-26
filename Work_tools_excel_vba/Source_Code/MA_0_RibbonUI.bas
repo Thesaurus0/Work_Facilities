@@ -236,7 +236,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
                 Case "ENABLED":     val = True
                 Case "ACTION":      Call subMain_OpenAcitveWorkbookLocation
             End Select
-        Case "btnFileFullPath"
+        Case "btnCopyFileFullPath"
             Select Case sType
                 Case "LABEL":   val = "WorkBook Full Path"
                 Case "IMAGE":   val = "FileOpen"
@@ -249,6 +249,20 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
                 Case "ENABLED":     val = True
                 Case "ACTION":      Call subMain_DisplayWorkbookFullPath
             End Select
+        Case "btnBackupActiveWorkbook"
+            Select Case sType
+                Case "LABEL":   val = "Backup this WorkBook"
+                Case "IMAGE":   val = "FileSaveAs"
+                Case "SIZE":        val = "false"    'large=true, normal=false
+                Case "SHOW_IMAGE":  val = "true"
+                Case "SUPERTIP":    val = ""
+                Case "SUPERTIP":    val = ""
+                Case "SCREENTIP":   val = ""
+                
+                Case "ENABLED":     val = True
+                Case "ACTION":      Call subMain_BackupActiveWorkbook
+            End Select
+            
         Case "btnExportSourceCode"
             Select Case sType
                 Case "LABEL":   val = "Export Source Code"

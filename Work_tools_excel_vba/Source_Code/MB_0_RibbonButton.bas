@@ -26,6 +26,14 @@ Sub subMain_DisplayWorkbookFullPath()
         
     Set myData = Nothing
 End Sub
+Sub subMain_BackupActiveWorkbook()
+    If Workbooks.Count <= 0 Then Exit Sub
+    
+    'MsgBox ActiveWorkbook.FullName
+    
+    If Len(ActiveWorkbook.Path) <= 0 Then Exit Sub
+    Call fBackupActiveWorkbook(ActiveWorkbook)
+End Sub
 Sub btnExportSourceCode_onAction()
     If Workbooks.Count <= 0 Then Exit Sub
     

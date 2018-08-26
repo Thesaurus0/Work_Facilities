@@ -42,4 +42,4 @@ Public Const RANGE_TargetMacroToSyncWithCommLib = "A7"
 Public Const RANGE_CommonLibFilesSelected = "A8"
 Public Const RANGE_CommonLibFolderSelected = "A9"
 Public Const RANGE_SyncWithCommLibWhichFunction = "A10"
-
+Public Const RANGE_ScanUselessOnebyOneModule = "A11"

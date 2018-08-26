@@ -177,7 +177,8 @@ Function fOpenAcitveWorkbookLocation(Optional wb As Workbook)
     If wbIsnothing Then Set wb = ActiveWorkbook
     
     If Len(wb.Path) <= 0 Then Exit Function
-     
+    
+    Shell "explorer.exe /e,/select, " & wb.FullName, vbMaximizedFocus
     Call fOpenFile(wb.Path)
     
     If wbIsnothing Then Set wb = Nothing

@@ -1033,7 +1033,7 @@ Function fDeleteRowsFromSheetLeaveHeader(ByRef sht As Worksheet, Optional lHeade
     
     If lMaxRow > lHeaderByRow Then
         sht.Rows(lHeaderByRow + 1 & ":" & lMaxRow).Delete Shift:=xlUp
-        Application.Goto sht.Cells(lHeaderByRow + 1, 1), True
+        Application.GoTo sht.Cells(lHeaderByRow + 1, 1), True
     End If
     
     sht.Visible = iOrigVisibility
@@ -1049,7 +1049,7 @@ Function fGotoCell(rgGoTo As Range, Optional lScrollRow As Long = 0, Optional iS
     iOrigVisibility = rgGoTo.Parent.Visible
     rgGoTo.Parent.Visible = xlSheetVisible
     
-    Application.Goto rgGoTo, True
+    Application.GoTo rgGoTo, True
      
     If lScrollRow > 0 Then ActiveWindow.ScrollRow = lScrollRow
     If iScrollCol > 0 Then ActiveWindow.ScrollColumn = iScrollCol
@@ -1066,4 +1066,96 @@ Function fWorkbookVBProjectIsProteced(Optional wbTarget As Workbook) As Boolean
     If wbTarget.VBProject.Protection = vbext_pp_locked Then
         fErr "The VBA is the workbook is protected, please opend it manually, then rerun it"
     End If
+End Function
+
+Function fBackupActiveWorkbook(wb As Workbook)
+    If Len(wb.Path) <= 0 Then MsgBox "the workbook is a temporary file.", vbCritical: Exit Function
+    
+    Dim sBakFolder As String
+    Dim sBakFileFullName As String
+    
+    sBakFolder = wb.Path & Application.PathSeparator & "Backup\"
+    
+    Call fCheckPath(sBakFolder, True)
+    
+    sBakFileFullName = sBakFolder & fGenBackupFileNameByTimeStamp(wb.Name)
+    
+    'Call fSaveWorkBookNotClose(wb)
+    
+    Dim sMsg As String
+    Dim response As VbMsgBoxResult
+    
+    If fFolderHasFileOlderThan(sBakFolder, 15) Then
+        sMsg = "The files older than 15 days under the backup folder will be deleted first, are you sure to delete them?"
+        response = MsgBox(sMsg, vbYesNoCancel + vbCritical + vbDefaultButton1)
+        
+        If response = vbYes Then
+            Call fDeleteOldFilesOlderThan(sBakFolder, 15)
+        ElseIf response = vbNo Then
+'            Exit Function
+        ElseIf response = vbCancel Then
+ '           Exit Function
+        End If
+    End If
+    
+    Call fBackupFile(wb.FullName, sBakFileFullName, False)
+    MsgBox "The file was backuped as " & vbCr & vbCr & sBakFileFullName, vbInformation
+    
+    fOpenFile sBakFolder
+End Function
+
+
+Function fBackupFile(ByVal sSourceFile As String, ByVal sBackupToFile As String, Optional overwritingExisting As Boolean = True)
+    fGetFSO
+    
+    Call gFSO.CopyFile(sSourceFile, sBackupToFile, overwritingExisting)
+End Function
+
+
+Function fDeleteOldFilesOlderThan(sFolder As String, iOlderThanDaysNum As Long)
+    Dim aFile As File
+    
+    fGetFSO
+    
+    If gFSO.FolderExists(sFolder) Then
+        For Each aFile In gFSO.GetFolder(sFolder)
+            If DateDiff("d", aFile.DateLastModified, Now()) > iOlderThanDaysNum Then
+                aFile.Delete
+                Exit For
+            End If
+        Next
+    End If
+    
+    Set aFile = Nothing
+End Function
+
+Function fFolderHasFileOlderThan(sFolder As String, iOlderThanDaysNum As Long) As Boolean
+    Dim aFile As File
+    
+    fFolderHasFileOlderThan = False
+    
+    fGetFSO
+    
+    If gFSO.FolderExists(sFolder) Then
+        For Each aFile In gFSO.GetFolder(sFolder).Files
+            If DateDiff("d", aFile.DateLastModified, Now()) > iOlderThanDaysNum Then
+                fFolderHasFileOlderThan = True
+                Exit For
+            End If
+        Next
+    End If
+    
+    Set aFile = Nothing
+End Function
+
+Function fGenBackupFileNameByTimeStamp(sFileName As String, Optional KeepFileExtAtTheEnd As Boolean = True) As String
+    Dim sOut As String
+    
+    If KeepFileExtAtTheEnd Then
+        sOut = fGetFileNetName(sFileName, True) & Format(Now(), "_YYYYMMDD_HHMMSS") & fGetFileExtension(sFileName, True)
+    Else
+        sOut = sFileName & Format(Now(), ".YYYYMMDD_HHMMSS")
+    End If
+    
+    fGenBackupFileNameByTimeStamp = sOut
 End Function
