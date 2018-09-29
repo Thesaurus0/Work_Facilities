@@ -593,7 +593,7 @@ End Function
 
 Function fGetFileParentFolder(asFileFullPath As String) As String
     fGetFSO
-    fGetFileParentFolder = gFSO.GetParentFolderName(asFileFullPath)
+    fGetFileParentFolder = fCheckPath(gFSO.GetParentFolderName(asFileFullPath))
 End Function
 
 Function fGetFileBaseName(asFileFullPath As String) As String
@@ -1586,6 +1586,47 @@ Function fDeleteAllFilesFromFolder(sFolder As String)
     End If
 End Function
 
+Function fDeleteAllFromFolder(sFolder As String)
+    fGetFSO
+
+    Dim aFile As File
+    Dim aSubFolder As Folder
+
+    If gFSO.FolderExists(sFolder) Then
+        For Each aFile In gFSO.GetFolder(sFolder).Files
+            aFile.Delete True
+        Next
+        
+        For Each aSubFolder In gFSO.GetFolder(sFolder).SubFolders
+            Call fDeleteAllFilesFromFolder(aSubFolder.Path, False)
+        Next
+    End If
+    
+    Set aFile = Nothing
+    Set aSubFolder = Nothing
+End Function
+Function fDeleteAllFilesFromFolder(sFolder As String, Optional LeaveAllFolder As Boolean = False)
+    fGetFSO
+
+    Dim aFile As File
+    Dim aSubFolder As Folder
+
+    If gFSO.FolderExists(sFolder) Then
+        For Each aFile In gFSO.GetFolder(sFolder).Files
+            aFile.Delete True
+        Next
+        
+        For Each aSubFolder In gFSO.GetFolder(sFolder).SubFolders
+            Call fDeleteAllFilesFromFolder(aSubFolder.Path, LeaveAllFolder)
+        Next
+        
+        If Not LeaveAllFolder Then Call gFSO.DeleteFolder(sFolder)
+    End If
+    
+    Set aFile = Nothing
+    Set aSubFolder = Nothing
+End Function
+
 Function fGetAllFilesUnderFolder(sFolder As String)
     Dim arrOut()
     Dim i As Long
@@ -2100,7 +2141,7 @@ Function fGetRegExp(Optional asPatten As String = "")
     If fNzero(asPatten) Then gRegExp.Pattern = asPatten
 End Function
 
-Function fSortArayDesc(ByRef arr(), Optional UseQuickSort As Boolean = True)
+Function fSortArrayDesc(ByRef arr(), Optional UseQuickSort As Boolean = True)
     If Not UseQuickSort Then
         Call fSortArrayBubbleSortDesc(arr)
     Else
@@ -2108,7 +2149,7 @@ Function fSortArayDesc(ByRef arr(), Optional UseQuickSort As Boolean = True)
     End If
 End Function
 
-Function fSortAray(ByRef arr(), Optional UseQuickSort As Boolean = True)
+Function fSortArray(ByRef arr(), Optional UseQuickSort As Boolean = True)
     If Not UseQuickSort Then
         Call fSortArrayBubbleSort(arr)
     Else
@@ -4501,25 +4542,6 @@ Function fCopySingleSheet2NewWorkbookFile(shtSource As Worksheet, asNewFileName 
     Set wbOut = Nothing
 End Function
 
-Function fDeleteRowsFromSheetLeaveHeader(ByRef sht As Worksheet, Optional lHeaderByRow As Long = 1)
-    Dim lMaxRow As Long
-    Dim iOrigVisibility As XlSheetVisibility
-
-    iOrigVisibility = sht.Visible
-    sht.Visible = xlSheetVisible
-
-    Call fRemoveFilterForSheet(sht)
-
-    lMaxRow = sht.Range("A1").SpecialCells(xlCellTypeLastCell).Row
-
-    If lMaxRow > lHeaderByRow Then
-        sht.Rows(lHeaderByRow + 1 & ":" & lMaxRow).Delete shift:=xlUp
-        Application.Goto sht.Cells(lHeaderByRow + 1, 1), True
-    End If
-
-    sht.Visible = iOrigVisibility
-End Function
-
 Function fGotoCell(rgGoTo As Range, Optional lScrollRow As Long = 0, Optional iScrollCol As Integer = 0)
 '    Dim shtCurrActive As Worksheet
 '
@@ -5184,7 +5206,7 @@ Function fRecalculateColumnIndexByRemoveNonImportTxtCol(ByRef dictLetterIndex As
 
     If fArrayIsEmptyOrNoData(arrTxtNonImportCol) Then GoTo exit_fun
 
-    Call fSortArayDesc(arrTxtNonImportCol)
+    Call fSortArrayDesc(arrTxtNonImportCol)
 
     Dim iArrayIndex As Long
     Dim iDictIndex As Long
@@ -7946,13 +7968,16 @@ Function fOpenWorkbook(ByVal asFileFullPath As String _
     'Call fExcelFileOpenedToCloseIt(asFileFullPath)
 
     If Len(Trim(asSheetName)) > 0 Then
-        If Not fSheetExists(asSheetName, , wbOut) Then
+        If Not fSheetExists(asSheetName, shtOut, wbOut) Then
             fErr "The workbook does not have a sheet named as [" & asSheetName & "], please chedk."
         End If
+    Else
+        Set shtOut = wbOut.Worksheets(1)
     End If
     Set fOpenWorkbook = wbOut
     Set wbOut = Nothing
 End Function
+
 Function fFolderExists(sFolder As String) As Boolean
     fGetFSO
     fFolderExists = gFSO.FolderExists(sFolder)
@@ -8266,14 +8291,6 @@ Function fSelectMultipleFileDialog(Optional asDefaultFilePath As String = "" _
     Erase arrOut
 End Function
 
-Function fWorkbookVBProjectIsProteced(Optional wbTarget As Workbook) As Boolean
-    If wbTarget Is Nothing Then Set wb = ActiveWorkbook
-
-    If wbTarget.VBProject.Protection = vbext_pp_locked Then
-        fErr "The VBA is the workbook is protected, please opend it manually, then rerun it"
-    End If
-End Function
-
 Function fReadModuleNameFromSourceCodeFile(sLibFile As String) As String
     Dim arrFileLines
     Dim lEachLine As Long
@@ -8363,7 +8380,7 @@ Function fSetConditionFormatForBorder(ByRef shtParam As Worksheet, Optional lMax
     Set aFormatCondition = Nothing
 End Function
 
-Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
+Function fSetConditionFormatForBorders(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
                                             , Optional lRowFrom As Long = 2, Optional lRowTo As Long = 0 _
                                             , Optional arrKeyColsNotBlank _
                                             , Optional bExtendToMore10ThousRows As Boolean = False)
@@ -8374,7 +8391,6 @@ Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional
     If lRowTo = 0 Then lRowTo = fGetValidMaxRow(shtParam)
 
     If lMaxCol <= 0 Then Exit Function
-
     If bExtendToMore10ThousRows Then lRowTo = lRowTo + 100000
 
     If lRowTo < lRowFrom Then Exit Function
@@ -8397,7 +8413,6 @@ Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional
                 sKeyColsFormula = sKeyColsFormula & "," & "len(trim($" & sColLetter & lRowFrom & ")) > 0"
             Next
             If Len(sKeyColsFormula) > 0 Then sKeyColsFormula = Right(sKeyColsFormula, Len(sKeyColsFormula) - 1)
-           ' sKeyColsFormula = sKeyColsFormula
         Else
             sColLetter = fNum2Letter(arrKeyColsNotBlank)
             sKeyColsFormula = "len(trim($" & sColLetter & lRowFrom & ")) > 0"
@@ -8407,26 +8422,17 @@ Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional
         sKeyColsFormula = ""
     End If
 
-    sFormula = "=And( " & sKeyColsFormula & ", mod(row(),2)=0)"
+    If Len(Trim(sKeyColsFormula)) > 0 Then _
+    sFormula = "=And( " & sKeyColsFormula & ")"
 
     Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
     aFormatCondition.SetFirstPriority
     aFormatCondition.StopIfTrue = False
 
-    'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_EVEN_LINE_COLOR")
-    sAddr = fGetSysMiscConfig("REPORT_EVEN_LINE_COLOR")
-    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
-    aFormatCondition.Interior.Color = lColor
-
-    sFormula = "=And( " & sKeyColsFormula & ", mod(row(),2)<>0)"
-    Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
-    aFormatCondition.SetFirstPriority
-    aFormatCondition.StopIfTrue = False
-
-    'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_ODD_LINE_COLOR")
-    sAddr = fGetSysMiscConfig("REPORT_ODD_LINE_COLOR")
-    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
-    aFormatCondition.Interior.Color = lColor
+    aFormatCondition.Borders(xlLeft).Weight = xlHairline
+    aFormatCondition.Borders(xlRight).Weight = xlHairline
+    aFormatCondition.Borders(xlTop).Weight = xlHairline
+    aFormatCondition.Borders(xlBottom).Weight = xlHairline
 
     Set aFormatCondition = Nothing
 End Function
@@ -8473,19 +8479,19 @@ Function fTranspose1DimenArrayTo2DimenArrayHorizontal(arrParam) As Variant
     Dim i As Long
     Dim iNew As Long
     Dim arrOut()
-    
+
     If fArrayIsEmptyOrNoData(arrParam) Then GoTo exit_fun
-    
+
     If fGetArrayDimension(arrParam) > 1 Then fErr "more than 1 dimension array is allowed."
-    
+
     ReDim arrOut(1 To 1, 1 To ArrLen(arrParam))
-    
+
     iNew = 0
     For i = LBound(arrParam) To UBound(arrParam)
         iNew = iNew + 1
         arrOut(1, iNew) = arrParam(i)
     Next
-    
+
 exit_fun:
     fTranspose1DimenArrayTo2DimenArrayHorizontal = arrOut
     Erase arrOut
@@ -8493,72 +8499,38 @@ End Function
 
 Function fWriteHeaderToSheet(sht As Worksheet, arrHeaders(), Optional alHeaderAtRow As Long = 1, Optional alHeaderFromCol As Long = 1)
     sht.Cells(alHeaderAtRow, alHeaderFromCol).Resize(1, ArrLen(arrHeaders)).value = fTranspose1DimenArrayTo2DimenArrayHorizontal(arrHeaders)
-    
+
     Call fSetFormatBoldOrangeBorderForRangeEspeciallyForHeader(fGetRangeByStartEndPos(sht, 1, 1, 1, ArrLen(arrHeaders)))
     Call fSetConditionFormatForBorder(sht, , , , 1, True)
-    
+
     sht.Columns.AutoFit
 End Function
 
 Function fGenBackupFileNameByTimeStamp(sFileName As String, Optional KeepFileExtAtTheEnd As Boolean = True) As String
     Dim sOut As String
-    
+
     If KeepFileExtAtTheEnd Then
         sOut = fGetFileNetName(sFileName, True) & Format(Now(), "_YYYYMMDD_HHMMSS") & fGetFileExtension(sFileName, True)
     Else
         sOut = sFileName & Format(Now(), ".YYYYMMDD_HHMMSS")
     End If
-    
+
     fGenBackupFileNameByTimeStamp = sOut
 End Function
-
-Function fGenBackupFileNameByTimeStamp(sFileName As String, Optional KeepFileExtAtTheEnd As Boolean = True) As String
-    Dim sOut As String
-    
-    If KeepFileExtAtTheEnd Then
-        sOut = fGetFileNetName(sFileName, True) & Format(Now(), "_YYYYMMDD_HHMMSS") & fGetFileExtension(sFileName, True)
-    Else
-        sOut = sFileName & Format(Now(), ".YYYYMMDD_HHMMSS")
-    End If
-    
-    fGenBackupFileNameByTimeStamp = sOut
-End Function
-
 
 Function fWorkbookVBProjectIsProteced(Optional wbTarget As Workbook) As Boolean
     If wbTarget Is Nothing Then Set wbTarget = ActiveWorkbook
-    
+
     If wbTarget.VBProject.Protection = vbext_pp_locked Then
         fErr "The VBA is the workbook is protected, please opend it manually, then rerun it"
     End If
 End Function
 
-
-Function fFolderHasFileOlderThan(sFolder As String, iOlderThanDaysNum As Long) As Boolean
-    Dim aFile As File
-    
-    fFolderHasFileOlderThan = False
-    
-    fGetFSO
-    
-    If gFSO.FolderExists(sFolder) Then
-        For Each aFile In gFSO.GetFolder(sFolder)
-            If DateDiff("d", aFile.DateLastModified, Now()) > iOlderThanDaysNum Then
-                fFolderHasFileOlderThan = True
-                Exit For
-            End If
-        Next
-    End If
-    
-    Set aFile = Nothing
-End Function
-
-
 Function fDeleteOldFilesOlderThan(sFolder As String, iOlderThanDaysNum As Long)
     Dim aFile As File
-    
+
     fGetFSO
-    
+
     If gFSO.FolderExists(sFolder) Then
         For Each aFile In gFSO.GetFolder(sFolder)
             If DateDiff("d", aFile.DateLastModified, Now()) > iOlderThanDaysNum Then
@@ -8567,17 +8539,17 @@ Function fDeleteOldFilesOlderThan(sFolder As String, iOlderThanDaysNum As Long)
             End If
         Next
     End If
-    
+
     Set aFile = Nothing
 End Function
 
 Function fFolderHasFileOlderThan(sFolder As String, iOlderThanDaysNum As Long) As Boolean
     Dim aFile As File
-    
+
     fFolderHasFileOlderThan = False
-    
+
     fGetFSO
-    
+
     If gFSO.FolderExists(sFolder) Then
         For Each aFile In gFSO.GetFolder(sFolder)
             If DateDiff("d", aFile.DateLastModified, Now()) > iOlderThanDaysNum Then
@@ -8586,14 +8558,267 @@ Function fFolderHasFileOlderThan(sFolder As String, iOlderThanDaysNum As Long) A
             End If
         Next
     End If
-    
+
     Set aFile = Nothing
 End Function
 
-
 Function fBackupFile(ByVal sSourceFile As String, ByVal sBackupToFile As String, Optional overwritingExisting As Boolean = True)
     fGetFSO
-    
+
     Call gFSO.CopyFile(sSourceFile, sBackupToFile, overwritingExisting)
 End Function
 
+Function fSetValidationForNumberForSheetColumns(sht As Worksheet, arrCols, aNumMin As Double, aNumMax As Double)
+    Dim i As Integer
+    Dim rg As Range
+
+    If IsArray(arrCols) Then
+        For i = LBound(arrCols) To UBound(arrCols)
+            If rg Is Nothing Then
+                Set rg = sht.Columns(arrCols(i))
+            Else
+                Set rg = Union(rg, sht.Columns(arrCols(i)))
+            End If
+        Next
+    Else
+        Set rg = sht.Columns(arrCols)
+    End If
+
+    Call fSetValidationForNumberRange(rg, aNumMin, aNumMax)
+    Set rg = Nothing
+End Function
+
+Function fDeleteRowsFromSheetLeaveHeader(ByRef sht As Worksheet, Optional lHeaderByRow As Long = 1)
+    Dim lMaxRow As Long
+    Dim iOrigVisibility As XlSheetVisibility
+
+    iOrigVisibility = sht.Visible
+    sht.Visible = xlSheetVisible
+
+    Call fRemoveFilterForSheet(sht)
+
+    lMaxRow = sht.Range("A1").SpecialCells(xlCellTypeLastCell).Row
+
+    If lMaxRow > lHeaderByRow Then
+        sht.Rows(lHeaderByRow + 1 & ":" & lMaxRow).Delete Shift:=xlUp
+        Application.Goto sht.Cells(lHeaderByRow + 1, 1), True
+    End If
+
+    sht.Visible = iOrigVisibility
+End Function
+
+Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
+                                            , Optional lRowFrom As Long = 2, Optional lRowTo As Long = 0 _
+                                            , Optional arrKeyColsNotBlank _
+                                            , Optional bExtendToMore10ThousRows As Boolean = False)
+'arrKeyColsNotBlank
+'    1. singlecol: 1
+'    1. array(1,2,3)
+    If lMaxCol = 0 Then lMaxCol = fGetValidMaxCol(shtParam)
+    If lRowTo = 0 Then lRowTo = fGetValidMaxRow(shtParam)
+
+    If lMaxCol <= 0 Then Exit Function
+
+    If bExtendToMore10ThousRows Then lRowTo = lRowTo + 100000
+
+    If lRowTo < lRowFrom Then Exit Function
+
+    Dim rngCondFormat As Range
+    Set rngCondFormat = fGetRangeByStartEndPos(shtParam, lRowFrom, 1, lRowTo, lMaxCol)
+
+    Dim sAddr As String
+    Dim sKeyColsFormula As String
+    Dim sFormula As String
+    Dim lColor As Long
+    Dim i As Integer
+    Dim sColLetter As String
+    Dim aFormatCondition As FormatCondition
+
+    If Not IsMissing(arrKeyColsNotBlank) Then
+        If IsArray(arrKeyColsNotBlank) Then
+            For i = LBound(arrKeyColsNotBlank) To UBound(arrKeyColsNotBlank)
+                sColLetter = fNum2Letter(arrKeyColsNotBlank(i))
+                sKeyColsFormula = sKeyColsFormula & "," & "len(trim($" & sColLetter & lRowFrom & ")) > 0"
+            Next
+            If Len(sKeyColsFormula) > 0 Then sKeyColsFormula = Right(sKeyColsFormula, Len(sKeyColsFormula) - 1)
+            'sKeyColsFormula = sKeyColsFormula
+        Else
+            sColLetter = fNum2Letter(arrKeyColsNotBlank)
+            sKeyColsFormula = "len(trim($" & sColLetter & lRowFrom & ")) > 0"
+            'sKeyColsFormula = sKeyColsFormula
+        End If
+    Else
+        sKeyColsFormula = ""
+    End If
+
+    If Len(sKeyColsFormula) > 0 Then
+        sFormula = "=And( " & sKeyColsFormula & ", mod(row(),2)=0)"
+    Else
+        sFormula = "=And( " & sKeyColsFormula & "mod(row(),2)=0)"
+    End If
+
+    Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
+    aFormatCondition.SetFirstPriority
+    aFormatCondition.StopIfTrue = False
+
+    'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_EVEN_LINE_COLOR")
+    sAddr = fGetSysMiscConfig("REPORT_EVEN_LINE_COLOR")
+    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
+    aFormatCondition.Interior.Color = lColor
+
+    sFormula = "=And( " & sKeyColsFormula & ", mod(row(),2)<>0)"
+    Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
+    aFormatCondition.SetFirstPriority
+    aFormatCondition.StopIfTrue = False
+
+    'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_ODD_LINE_COLOR")
+    sAddr = fGetSysMiscConfig("REPORT_ODD_LINE_COLOR")
+    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
+    aFormatCondition.Interior.Color = lColor
+
+    Set aFormatCondition = Nothing
+End Function
+
+Function fSetFormatForOddEvenLineByFixColorForRange(ByRef rg As Range)
+    Dim lRowTo As Long
+    Dim lMaxCol As Long
+    Dim shtOutput As Worksheet
+
+    Dim rgOddLInes As Range
+    Dim rgEvenLInes As Range
+    Dim lEachRow As Long
+
+    Set shtOutput = rg.Parent
+    lRowTo = rg.Row + rg.Rows.Count - 1
+    lMaxCol = rg.Column + rg.Columns.Count - 1
+
+    For lEachRow = rg.Row To lRowTo
+        If (lEachRow Mod 2) = 0 Then
+            If rgEvenLInes Is Nothing Then
+                Set rgEvenLInes = fGetRangeByStartEndPos(shtOutput, lEachRow, 1, lEachRow, lMaxCol)
+            Else
+                Set rgEvenLInes = Union(rgEvenLInes, fGetRangeByStartEndPos(shtOutput, lEachRow, 1, lEachRow, lMaxCol))
+            End If
+        Else
+            If rgOddLInes Is Nothing Then
+                Set rgOddLInes = fGetRangeByStartEndPos(shtOutput, lEachRow, 1, lEachRow, lMaxCol)
+            Else
+                Set rgOddLInes = Union(rgOddLInes, fGetRangeByStartEndPos(shtOutput, lEachRow, 1, lEachRow, lMaxCol))
+            End If
+        End If
+    Next
+
+    Dim sAddr As String
+    If Not rgEvenLInes Is Nothing Then
+        'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_EVEN_LINE_COLOR")
+        sAddr = fGetSysMiscConfig("REPORT_EVEN_LINE_COLOR")
+        rgEvenLInes.Interior.Color = fGetRangeFromExternalAddress(sAddr).Interior.Color
+    End If
+    If Not rgOddLInes Is Nothing Then
+       ' sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_ODD_LINE_COLOR")
+        sAddr = fGetSysMiscConfig("REPORT_ODD_LINE_COLOR")
+        rgOddLInes.Interior.Color = fGetRangeFromExternalAddress(sAddr).Interior.Color
+    End If
+    Set rgEvenLInes = Nothing
+    Set rgOddLInes = Nothing
+    Set shtOutput = Nothing
+End Function
+
+Function fIsMerged(rg As Range) As Boolean
+    fIsMerged = rg.MergeCells
+End Function
+
+Function fStrInDelimiteredStr(ByVal asAnswerStr As String, ByVal sEachAns As String, Optional sDeli As String = "|") As Integer
+    Dim sAnswerStr As String
+    Dim iAt As Integer
+
+    sEachAns = sDeli & Trim(sEachAns) & sDeli
+    sAnswerStr = sDeli & Trim(asAnswerStr) & sDeli
+
+    iAt = 0
+    iAt = InStr(sAnswerStr, sEachAns)
+
+    Dim sLeft As String
+    If iAt > 0 Then
+        If iAt = 1 Then GoTo exit_fun
+
+        sLeft = Left(sAnswerStr, iAt - 1)
+
+        iAt = Len(sLeft) - Len(Replace(sLeft, sDeli, "")) + 1
+    End If
+
+exit_fun:
+    fStrInDelimiteredStr = iAt
+End Function
+
+Function fFillArrayByMergedCells(ByRef arrMaster, iMergeCol As Long, sht As Worksheet, Optional lStartRow As Long) As Long
+    Dim lEachRow As Long
+    Dim lMaxRow As Long
+    Dim aValue
+    Dim rgMerged As Range
+    Dim lMergeStartRow As Long
+    Dim lEndRow As Long
+    Dim i As Long
+    Dim lMergeRowsCnt As Long
+
+    lMaxRow = ArrLen(arrMaster, 1)
+
+    aValue = ""
+    lMergeRowsCnt = 0
+    For lEachRow = lStartRow To lMaxRow
+        If sht.Cells(lEachRow, iMergeCol).MergeCells Then
+            Set rgMerged = sht.Cells(lEachRow, iMergeCol).MergeArea
+
+            lMergeStartRow = rgMerged.Row
+            lEndRow = rgMerged.Row + rgMerged.Rows.Count - 1
+
+            lMergeRowsCnt = lMergeRowsCnt + rgMerged.Rows.Count
+
+            aValue = arrMaster(lMergeStartRow, iMergeCol)
+
+            For i = lEachRow + 1 To lEndRow
+                arrMaster(i, iMergeCol) = aValue
+            Next
+
+            lEachRow = lEndRow
+        Else
+            Set rgMerged = Nothing
+        End If
+    Next
+
+    fFillArrayByMergedCells = lMergeRowsCnt
+End Function
+
+Function fGetAllExcelFileListFromSubFolders(sFolder As String)
+    Dim sCmd As String
+    Const QUOTA = """"
+    
+    sFolder = fCheckPath(sFolder)
+
+    Dim sOutput As String
+    Dim wsh As WshShell
+    Set wsh = New WshShell
+    
+    sCmd = "cmd /c dir /b/s " & QUOTA & sFolder & "*.xls" & QUOTA _
+         & " & " _
+         & "cmd /c dir /b/s " & QUOTA & sFolder & "*.xlsx" & QUOTA
+    
+    sOutput = wsh.Exec(sCmd).StdOut.ReadAll
+    
+    Set wsh = Nothing
+    
+    Dim arrOutput
+    
+    arrOutput = Split(Trim(sOutput), vbCrLf)
+    
+    If ArrLen(arrOutput) > 0 Then
+        If Len(Trim(arrOutput(UBound(arrOutput)))) <= 0 Then
+            ReDim Preserve arrOutput(LBound(arrOutput) To UBound(arrOutput) - 1)
+        End If
+    Else
+        arrOutput = Array()
+    End If
+    
+    fGetAllExcelFileListFromSubFolders = arrOutput
+    Erase arrOutput
+End Function
