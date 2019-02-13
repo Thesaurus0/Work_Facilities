@@ -8822,3 +8822,32 @@ Function fGetAllExcelFileListFromSubFolders(sFolder As String)
     fGetAllExcelFileListFromSubFolders = arrOutput
     Erase arrOutput
 End Function
+
+
+Function fFindExternalLinks(wb As Workbook) As Dictionary
+    Dim dictOut As New Dictionary
+    If Not IsEmpty(wb.LinkSources(xlExcelLinks)) Then
+        For Each link In wb.LinkSources(xlExcelLinks)
+            dictOut.Add dictOut.Count + 1, link
+        Next link
+    End If
+    
+    Dim sht As Worksheet
+    Dim eachCell As Range
+    For Each sht In wb.Worksheets
+        Set Spcell = sht.Cells.SpecialCells(xlCellTypeFormulas)
+        If Err.Number = 1004 Then GoTo Err
+        
+        For Each Cell In Spcell
+              If Cell.Formula Like "*:\*" Then
+              If InStr(Cell.Formula, "[") > 0 Then
+        Next
+   
+        For Each eachCell In sht.Cells.SpecialCells(xlCellTypeAllValidation)
+            if eachcell.Formula
+        Next
+    Next
+    Set fListLinks = dictOut
+End Function
+
+
