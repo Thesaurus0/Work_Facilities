@@ -337,49 +337,49 @@ Public Function fGetValidMaxRow(shtParam As Worksheet, Optional abCountInMergedC
     Dim lExcelMaxRow As Long
     Dim lUsedMaxRow As Long
     Dim lUsedMaxCol As Long
-
+    
     lExcelMaxRow = shtParam.Rows.Count
     lUsedMaxRow = shtParam.UsedRange.Row + shtParam.UsedRange.Rows.Count - 1
     lUsedMaxCol = shtParam.UsedRange.Column + shtParam.UsedRange.Columns.Count - 1
-
+    
     If lUsedMaxRow = 1 Then
-        If shtParam.UsedRange.Address = "$A$1" And Len(shtParam.Range("A1")) <= 0 Then
+        If WorksheetFunction.CountA(shtParam.Range(shtParam.Cells(1, 1), shtParam.Cells(1, lUsedMaxCol))) <= 0 Then
             fGetValidMaxRow = 0
             Exit Function
         End If
     End If
-
+    
     Dim lEachCol As Long
     Dim lValidMaxRowSaved As Long
     Dim lEachValidMaxRow As Long
-
+    
     lValidMaxRowSaved = 0
-
+    
     For lEachCol = 1 To lUsedMaxCol
         lEachValidMaxRow = shtParam.Cells(lExcelMaxRow, lEachCol).End(xlUp).Row
-
+        
         If lEachValidMaxRow >= lUsedMaxRow Then
             fGetValidMaxRow = lEachValidMaxRow
             Exit Function
         End If
-
+        
         If abCountInMergedCell Then
             If shtParam.Cells(lEachValidMaxRow, lEachCol).MergeCells Then
                 lEachValidMaxRow = shtParam.Cells(lEachValidMaxRow, lEachCol).MergeArea.Row _
                                  + shtParam.Cells(lEachValidMaxRow, lEachCol).MergeArea.Rows.Count - 1
             End If
         End If
-
+        
         If lEachValidMaxRow > lValidMaxRowSaved Then lValidMaxRowSaved = lEachValidMaxRow
     Next
-
+    
     If lUsedMaxCol = 1 And lValidMaxRowSaved = 1 Then
         If Len(shtParam.Range("A1")) <= 0 Then
             fGetValidMaxRow = 0
             Exit Function
         End If
     End If
-
+    
     fGetValidMaxRow = lValidMaxRowSaved
 End Function
 
@@ -387,49 +387,49 @@ Public Function fGetValidMaxCol(shtParam As Worksheet, Optional abCountInMergedC
     Dim lExcelMaxCol As Long
     Dim lUsedMaxRow As Long
     Dim lUsedMaxCol As Long
-
+    
     lExcelMaxCol = shtParam.Columns.Count
     lUsedMaxRow = shtParam.UsedRange.Row + shtParam.UsedRange.Rows.Count - 1
     lUsedMaxCol = shtParam.UsedRange.Column + shtParam.UsedRange.Columns.Count - 1
-
+    
     If lUsedMaxRow = 1 Then
-        If shtParam.UsedRange.Address = "$A$1" And Len(shtParam.Range("A1")) <= 0 Then
+        If WorksheetFunction.CountA(shtParam.Range(shtParam.Cells(1, 1), shtParam.Cells(lUsedMaxRow, 1))) <= 0 Then
             fGetValidMaxCol = 0
             Exit Function
         End If
     End If
-
+    
     Dim lEachRow As Long
     Dim lValidMaxColSaved As Long
     Dim lEachValidMaxCol As Long
-
+    
     lValidMaxColSaved = 0
-
+    
     For lEachRow = 1 To lUsedMaxRow
         lEachValidMaxCol = shtParam.Cells(lEachRow, lExcelMaxCol).End(xlToLeft).Column
-
+        
         If lEachValidMaxCol >= lUsedMaxCol Then
             fGetValidMaxCol = lEachValidMaxCol
             Exit Function
         End If
-
+        
         If abCountInMergedCell Then
             If shtParam.Cells(lEachRow, lEachValidMaxCol).MergeCells Then
                 lEachValidMaxCol = shtParam.Cells(lEachRow, lEachValidMaxCol).MergeArea.Column _
                                  + shtParam.Cells(lEachRow, lEachValidMaxCol).MergeArea.Columns.Count - 1
             End If
         End If
-
+        
         If lEachValidMaxCol > lValidMaxColSaved Then lValidMaxColSaved = lEachValidMaxCol
     Next
-
+    
     If lUsedMaxRow = 1 And lValidMaxColSaved = 1 Then
         If Len(shtParam.Range("A1")) <= 0 Then
             fGetValidMaxCol = 0
             Exit Function
         End If
     End If
-
+    
     fGetValidMaxCol = lValidMaxColSaved
 End Function
 
@@ -3697,8 +3697,13 @@ exit_function:
     Set rngFound = Nothing
 End Function
 
-Function fGetRangeByStartEndPos(shtParam As Worksheet, alStartRow As Long, alStartCol As Long, alEndRow As Long, alEndCol As Long) As Range
-    If alStartRow > alEndRow Then fErr "alStartRow > alEndRow in function fGetRangeByStartEndPos, please change your program to add the check logic before calling fGetRangeByStartEndPos"
+Function fGetRangeByStartEndPos(shtParam As Worksheet, alStartRow As Long, Optional alStartCol As Long = 1, Optional alEndRow As Long = 0, Optional alEndCol As Long = 0) As Range
+    If alEndRow <= 0 Then alEndRow = fGetValidMaxRow(shtParam)
+    If alEndCol <= 0 Then alEndCol = fGetValidMaxCol(shtParam)
+    
+    If alEndRow < alStartRow Then fGetRangeByStartEndPos = Nothing: Exit Function
+    If alEndCol < alStartCol Then fGetRangeByStartEndPos = Nothing: Exit Function
+    
     With shtParam
         Set fGetRangeByStartEndPos = .Range(.Cells(alStartRow, alStartCol), .Cells(alEndRow, alEndCol))
     End With

@@ -15,14 +15,14 @@
 				<Literal>
 					<ID>string</ID>
 					<ToolTip>String to display</ToolTip>
-					<Default>"Test"</Default>
+					<Default>Test</Default>
 				</Literal>
 				<Literal Editable="false">
 					<ID>SystemWindowsFormsMessageBox</ID>
 					<Function>SimpleTypeName(global::System.Windows.Forms.MessageBox)</Function>
 				</Literal>
 			</Declarations>
-			<Code Language="csharp"><![CDATA[$SystemWindowsFormsMessageBox$.Show($string$);$end$]]>
+			<Code Language="csharp"><![CDATA[$SystemWindowsFormsMessageBox$.Show("$string$$end$");]]>
 			</Code>
 		</Snippet>
 	</CodeSnippet>
