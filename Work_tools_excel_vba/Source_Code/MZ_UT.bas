@@ -310,7 +310,7 @@ Function fReplaceIlleagleCharInFileNameOneCharByOneChar(sFileName As String) As 
     fReplaceIlleagleCharInFileNameOneCharByOneChar = sOut
 End Function
 
-Sub test()
+Sub Test()
     Dim a As String
     Dim b As String
     a = "F:\VBA_Orders\ExportText\∞Æ«È√µπÂ?-”—«È‘¬ºæ.txt"

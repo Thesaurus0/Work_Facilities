@@ -4,7 +4,7 @@ Option Base 1
 
 #If VBA7 And Win64 Then
     Private Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" _
-    (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String _
+    (ByVal Hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String _
     , ByVal lpDirectory As String, ByVal nShowCmd As Long) As LongPtr
 #Else
     Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" _
@@ -41,7 +41,7 @@ Function fOpenFile(asFileFullPath As String)
     Const SE_ERR_NOASSOC = 31&
     Const ERROR_BAD_FORMAT = 11&
 
-    lReturnVal = ShellExecute(Application.hwnd, "Open", asFileFullPath, "", "C:\", SW_SHOWMAXIMIZED)
+    lReturnVal = ShellExecute(Application.Hwnd, "Open", asFileFullPath, "", "C:\", SW_SHOWMAXIMIZED)
     
     If lReturnVal <= 32 Then
         Select Case lReturnVal

@@ -3701,13 +3701,14 @@ Function fGetRangeByStartEndPos(shtParam As Worksheet, alStartRow As Long, Optio
     If alEndRow <= 0 Then alEndRow = fGetValidMaxRow(shtParam)
     If alEndCol <= 0 Then alEndCol = fGetValidMaxCol(shtParam)
     
-    If alEndRow < alStartRow Then fGetRangeByStartEndPos = Nothing: Exit Function
-    If alEndCol < alStartCol Then fGetRangeByStartEndPos = Nothing: Exit Function
+    If alEndRow < alStartRow Then Set fGetRangeByStartEndPos = Nothing: Exit Function
+    If alEndCol < alStartCol Then Set fGetRangeByStartEndPos = Nothing: Exit Function
     
     With shtParam
         Set fGetRangeByStartEndPos = .Range(.Cells(alStartRow, alStartCol), .Cells(alEndRow, alEndCol))
     End With
 End Function
+
 
 Function fReadRangeDatatoArrayByStartEndPos(shtParam As Worksheet, alStartRow As Long, alStartCol As Long, alEndRow As Long, alEndCol As Long) As Variant
     If alStartRow > alEndRow Then
@@ -8855,4 +8856,310 @@ Function fFindExternalLinks(wb As Workbook) As Dictionary
     Set fListLinks = dictOut
 End Function
 
+
+Function fPasteAppendSimpleDictionaryToSheet(dict As Dictionary, sht As Worksheet, Optional alPasteFromRow As Long = 1, Optional alPasteFromCol As Long = 1)
+    If dict.Count <= 0 Then Exit Function
+    
+    If alPasteFromRow <= 0 Then alPasteFromRow = fGetValidMaxRow(sht) + 1
+    
+    Dim arr()
+    Dim aKey
+    Dim i As Long
+    ReDim arr(1 To dict.Count, 1 To 1)
+    
+    i = 0
+    For Each aKey In dict.Keys
+        i = i + 1
+        arr(i, 1) = aKey
+    Next
+
+    sht.Cells(alPasteFromRow, alPasteFromCol).Resize(ArrLen(arr, 1), ArrLen(arr, 2)).value = arr
+    Erase arr
+    
+    ReDim arr(1 To dict.Count, 1 To 1)
+    i = 0
+    For Each aKey In dict.Items
+        i = i + 1
+        arr(i, 1) = aKey
+    Next
+
+    sht.Cells(alPasteFromRow, alPasteFromCol + 1).Resize(ArrLen(arr, 1), ArrLen(arr, 2)).value = arr
+    Erase arr
+End Function
+
+
+Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
+                                            , Optional lRowFrom As Long = 2, Optional lRowTo As Long = 0 _
+                                            , Optional arrKeyColsNotBlank _
+                                            , Optional lExtendRowCnt As Long = 10000)
+'arrKeyColsNotBlank
+'    1. singlecol: 1
+'    1. array(1,2,3)
+    If lMaxCol = 0 Then lMaxCol = fGetValidMaxCol(shtParam)
+    If lRowTo = 0 Then lRowTo = fGetValidMaxRow(shtParam)
+    
+    If lMaxCol <= 0 Then Exit Function
+    
+    lRowTo = lRowTo + lExtendRowCnt
+
+    If lRowTo < lRowFrom Then Exit Function
+    
+    Dim rngCondFormat As Range
+    Set rngCondFormat = fGetRangeByStartEndPos(shtParam, lRowFrom, 1, lRowTo, lMaxCol)
+    
+    Dim sAddr As String
+    Dim sKeyColsFormula As String
+    Dim sFormula As String
+    Dim lColor As Long
+    Dim i As Integer
+    Dim sColLetter As String
+    Dim aFormatCondition As FormatCondition
+    
+    If Not IsMissing(arrKeyColsNotBlank) Then
+        If IsArray(arrKeyColsNotBlank) Then
+            For i = LBound(arrKeyColsNotBlank) To UBound(arrKeyColsNotBlank)
+                sColLetter = fNum2Letter(arrKeyColsNotBlank(i))
+                sKeyColsFormula = sKeyColsFormula & "," & "len(trim($" & sColLetter & lRowFrom & ")) > 0"
+            Next
+            If Len(sKeyColsFormula) > 0 Then sKeyColsFormula = Right(sKeyColsFormula, Len(sKeyColsFormula) - 1)
+            sKeyColsFormula = sKeyColsFormula
+        Else
+            sColLetter = fNum2Letter(arrKeyColsNotBlank)
+            sKeyColsFormula = "len(trim($" & sColLetter & lRowFrom & ")) > 0"
+            sKeyColsFormula = sKeyColsFormula
+        End If
+    Else
+        sKeyColsFormula = "1=1"
+    End If
+    
+    If Len(sKeyColsFormula) > 0 Then
+        sFormula = "=And( " & sKeyColsFormula & ", mod(row(),2)=0)"
+    Else
+        sFormula = "=And( " & sKeyColsFormula & "mod(row(),2)=0)"
+    End If
+    
+    Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
+    aFormatCondition.SetFirstPriority
+    aFormatCondition.StopIfTrue = False
+    
+    'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_EVEN_LINE_COLOR")
+    sAddr = fGetSysMiscConfig("REPORT_EVEN_LINE_COLOR")
+    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
+    aFormatCondition.Interior.Color = lColor
+    
+    sFormula = "=And( " & sKeyColsFormula & ", mod(row(),2)<>0)"
+    Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
+    aFormatCondition.SetFirstPriority
+    aFormatCondition.StopIfTrue = False
+    
+    'sAddr = fGetSpecifiedConfigCellAddress(shtSysConf, "[System Misc Settings]", "Value", "Setting Item ID=REPORT_ODD_LINE_COLOR")
+    sAddr = fGetSysMiscConfig("REPORT_ODD_LINE_COLOR")
+    lColor = fGetRangeFromExternalAddress(sAddr).Interior.Color
+    aFormatCondition.Interior.Color = lColor
+    
+    Set aFormatCondition = Nothing
+End Function
+
+Function fSetConditionFormatForBorders(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
+                                            , Optional lRowFrom As Long = 2, Optional lRowTo As Long = 0 _
+                                            , Optional arrKeyColsNotBlank _
+                                            , Optional lExtendRowCnt As Long = 10000)
+'arrKeyColsNotBlank
+'    1. singlecol: 1
+'    1. array(1,2,3)
+    If lMaxCol = 0 Then lMaxCol = fGetValidMaxCol(shtParam)
+    If lRowTo = 0 Then lRowTo = fGetValidMaxRow(shtParam)
+    
+    If lMaxCol <= 0 Then Exit Function
+    lRowTo = lRowTo + lExtendRowCnt
+
+    If lRowTo < lRowFrom Then Exit Function
+    
+    Dim rngCondFormat As Range
+    Set rngCondFormat = fGetRangeByStartEndPos(shtParam, lRowFrom, 1, lRowTo, lMaxCol)
+    
+    Dim sAddr As String
+    Dim sKeyColsFormula As String
+    Dim sFormula As String
+    Dim lColor As Long
+    Dim i As Integer
+    Dim sColLetter As String
+    Dim aFormatCondition As FormatCondition
+    
+    If Not IsMissing(arrKeyColsNotBlank) Then
+        If IsArray(arrKeyColsNotBlank) Then
+            For i = LBound(arrKeyColsNotBlank) To UBound(arrKeyColsNotBlank)
+                sColLetter = fNum2Letter(arrKeyColsNotBlank(i))
+                sKeyColsFormula = sKeyColsFormula & "," & "len(trim($" & sColLetter & lRowFrom & ")) > 0"
+            Next
+            If Len(sKeyColsFormula) > 0 Then sKeyColsFormula = Right(sKeyColsFormula, Len(sKeyColsFormula) - 1)
+        Else
+            sColLetter = fNum2Letter(arrKeyColsNotBlank)
+            sKeyColsFormula = "len(trim($" & sColLetter & lRowFrom & ")) > 0"
+            sKeyColsFormula = sKeyColsFormula
+        End If
+    Else
+        sKeyColsFormula = "1=1"
+    End If
+    
+    sFormula = "=And( " & sKeyColsFormula & ")"
+    
+    Set aFormatCondition = rngCondFormat.FormatConditions.Add(Type:=xlExpression, Formula1:=sFormula)
+    aFormatCondition.SetFirstPriority
+    aFormatCondition.StopIfTrue = False
+    
+    aFormatCondition.Borders(xlLeft).Weight = xlHairline
+    aFormatCondition.Borders(xlRight).Weight = xlHairline
+    aFormatCondition.Borders(xlTop).Weight = xlHairline
+    aFormatCondition.Borders(xlBottom).Weight = xlHairline
+ 
+    Set aFormatCondition = Nothing
+End Function
+        
+        
+Function fCopyDictionaryKeys2Array(dict As Dictionary, ByRef arrOut())
+    If dict.Count <= 0 Then
+        arrOut = Array()
+    End If
+    
+    ReDim arrOut(1 To dict.Count)
+    
+    Dim i As Long
+    Dim aKey
+    
+    i = 0
+    For Each aKey In dict.Keys
+        i = i + 1
+        arrOut(i) = aKey
+    Next
+End Function
+Function fCopyDictionaryItemsArray(dict As Dictionary, ByRef arrOut())
+    If dict.Count <= 0 Then
+        arrOut = Array()
+    End If
+    
+    ReDim arrOut(1 To dict.Count)
+    
+    Dim i As Long
+    Dim aKey
+    
+    i = 0
+    For Each aKey In dict.Items
+        i = i + 1
+        arrOut(i) = aKey
+    Next
+End Function
+
+Function fConvertDictionaryDelimiteredKeysTo2DimenArrayForPaste(ByRef dict As Dictionary, Optional asDelimiter As String = DELIMITER _
+            , Optional bSetDictToNothing As Boolean = True) As Variant
+    Dim arrTmp
+    Dim i As Long
+    Dim j As Long
+    Dim sEachLine As String
+    Dim arrEachLine
+    Dim arrOut()
+    
+    arrOut = Array()
+    
+    If dict.Count > 0 Then
+        ReDim arrOut(1 To dict.Count, 1 To UBound(Split(dict.Keys(0), asDelimiter)) + 1)
+    End If
+    
+    Dim aKey
+    i = 0
+    For Each aKey In dict.Keys
+        sEachLine = aKey
+        arrEachLine = Split(sEachLine, asDelimiter)
+        
+        i = i + 1
+        For j = LBound(arrEachLine) To UBound(arrEachLine)
+            arrOut(i, j + 1) = arrEachLine(j)
+        Next
+    Next
+    
+    fConvertDictionaryDelimiteredKeysTo2DimenArrayForPaste = arrOut
+    Erase arrOut
+End Function
+Function fConvertDictionaryDelimiteredItemsTo2DimenArrayForPaste(ByRef dict As Dictionary, Optional asDelimiter As String = DELIMITER _
+            , Optional bSetDictToNothing As Boolean = True) As Variant
+    Dim arrTmp
+    Dim i As Long
+    Dim j As Long
+    Dim sEachLine As String
+    Dim arrEachLine
+    Dim arrOut()
+    
+    arrOut = Array()
+    
+    If dict.Count > 0 Then
+        ReDim arrOut(1 To dict.Count, 1 To UBound(Split(dict.Items(0), asDelimiter)) - LBound(Split(dict.Items(0), asDelimiter)) + 1)
+    End If
+    
+    i = 0
+    For Each aKey In dict.Items
+        sEachLine = aKey
+        arrEachLine = Split(sEachLine, asDelimiter)
+        
+        i = i + 1
+        For j = LBound(arrEachLine) To UBound(arrEachLine)
+            arrOut(i, j + 1) = arrEachLine(j)
+        Next
+    Next
+    
+    fConvertDictionaryDelimiteredItemsTo2DimenArrayForPaste = arrOut
+    Erase arrOut
+End Function
+
+Function fLog(iLogInfoType As LoggerLevel, Optional sMsg As String = "", Optional sSource As String = "")
+    Dim sFileName As String
+    Dim fileNum As Integer
+    
+    If giLoggerLevel = LoggerLevel.Off Then
+        Exit Function
+    Else
+        If iLogInfoType < giLoggerLevel Then Exit Function
+    End If
+    
+    fGetFSO
+    
+    sFileName = Left(ThisWorkbook.FullName, InStr(1, ThisWorkbook.FullName, ".xls", vbTextCompare)) & "log"
+    
+    If gFSO.FileExists(sFileName) Then
+        If FileLen(sFileName) > 200000 Then
+            'fbackupfile
+            Kill sFileName
+        End If
+    End If
+    
+    Dim sLoggerType As String
+    Select Case iLogInfoType
+        Case LoggerLevel.Debug_
+            sLoggerType = "DEBUG"
+        Case LoggerLevel.Info
+            sLoggerType = "INFO"
+        Case LoggerLevel.Warning
+            sLoggerType = "WARNING"
+        Case LoggerLevel.Error
+            sLoggerType = "ERROR"
+        Case Else
+            fErr "wrong param iLogInfoType in flog"
+    End Select
+    
+    fileNum = FreeFile
+    Open sFileName For Append As #fileNum
+    Print #fileNum, Format(Now, "yyyy-mm-dd HH:MM:SS") & vbTab & sLoggerType & vbTab & source & vbTab & sMsg
+    Close #fileNum
+End Function
+
+Function fDeleteTrailingBlankRowsFromSheet(sht As Worksheet)
+    Dim lValidMax As Long
+    Dim lUsedMax As Long
+    
+    lUsedMax = sht.UsedRange.Row + sht.UsedRange.Rows.Count - 1
+    lValidMax = fGetValidMaxRow(sht)
+    
+    If lUsedMax > lValidMax Then
+        sht.Rows(lValidMax + 1 & ":" & lUsedMax).Delete Shift:=xlUp
+    End If
+End Function
 
