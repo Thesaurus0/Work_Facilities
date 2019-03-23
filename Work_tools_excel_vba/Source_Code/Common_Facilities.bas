@@ -696,19 +696,19 @@ Sub Sub_FilterBySelectedCells()
     Set rgData = fGetRangeByStartEndPos(ActiveSheet, 1, 1, lMaxRow, lMaxCol)
     
     Dim rngEachArea As Range
-    Dim eachCell As Range
+    Dim eachcell As Range
     
     For Each rngEachArea In rngSelected.Areas
-        For Each eachCell In rngEachArea
-            If eachCell.Column > lMaxCol Then Exit For
+        For Each eachcell In rngEachArea
+            If eachcell.Column > lMaxCol Then Exit For
             
-            If IsNumeric(eachCell.value) Then
-                rgData.AutoFilter Field:=eachCell.Column _
-                                , Criteria1:=eachCell.value _
+            If IsNumeric(eachcell.value) Then
+                rgData.AutoFilter Field:=eachcell.Column _
+                                , Criteria1:=eachcell.value _
                                 , Operator:=xlAnd
             Else
-                rgData.AutoFilter Field:=eachCell.Column _
-                                , Criteria1:="=*" & eachCell.value & "*" _
+                rgData.AutoFilter Field:=eachcell.Column _
+                                , Criteria1:="=*" & eachcell.value & "*" _
                                 , Operator:=xlAnd
             End If
         Next

@@ -4,7 +4,7 @@ Option Base 1
 
 #If VBA7 And Win64 Then
     Private Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" _
-    (ByVal Hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String _
+    (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String _
     , ByVal lpDirectory As String, ByVal nShowCmd As Long) As LongPtr
 #Else
     Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" _
@@ -41,7 +41,7 @@ Function fOpenFile(asFileFullPath As String)
     Const SE_ERR_NOASSOC = 31&
     Const ERROR_BAD_FORMAT = 11&
 
-    lReturnVal = ShellExecute(Application.Hwnd, "Open", asFileFullPath, "", "C:\", SW_SHOWMAXIMIZED)
+    lReturnVal = ShellExecute(Application.hwnd, "Open", asFileFullPath, "", "C:\", SW_SHOWMAXIMIZED)
     
     If lReturnVal <= 32 Then
         Select Case lReturnVal
@@ -492,8 +492,11 @@ Function fSelectSaveAsFileDialog(Optional asDeafaulfFilePath As String = "", Opt
         sDefaultFileName = fGetFileBaseName(asDeafaulfFilePath)
         
         If Not fFolderExists(sDefaultFolder) Then sDefaultFolder = ThisWorkbook.Path
+        
+        sDefaultFileName = fCheckPath(sDefaultFolder) & sDefaultFolder
     Else
         sDefaultFolder = ThisWorkbook.Path
+        sDefaultFolder = sDefaultFolder
     End If
     
     sDefaultFolder = fCheckPath(sDefaultFolder)
@@ -504,7 +507,9 @@ Function fSelectSaveAsFileDialog(Optional asDeafaulfFilePath As String = "", Opt
     
     If Len(Trim(asFileFilters)) > 0 And Len(Trim(sDefaultFileName)) > 0 Then
         Dim sFirstFilterExt As String
-        sFirstFilterExt = Trim(Split(asFileFilters, ",")(1))
+        sFirstFilterExt = Trim(Split(asFileFilters, ",")(0))
+        sFirstFilterExt = Trim(Split(sFirstFilterExt, ".")(1))
+        sFirstFilterExt = Replace(sFirstFilterExt, ")", "")
         
         If UCase(fGetFileExtension(sDefaultFileName)) <> UCase(Trim(Split(sFirstFilterExt, ".")(1))) Then
             MsgBox "Warning: the file extension is not same as the first filter extension, which will cause the default to be blank." _
@@ -1825,8 +1830,14 @@ Function fEnlargeAray(ByRef arr, Optional aPreserve As Boolean = True, Optional 
     fRedim arr, ArrLen(arr) + 1, aPreserve
 End Function
 
-Function ArrLen(arr) As Long
-    ArrLen = UBound(arr) - LBound(arr) + 1
+Function ArrLen(arrParam, Optional iDimension As Integer = 1) As Long
+    If iDimension > 2 Then fErr "wrong param in arrlen"
+
+    If fArrayIsEmpty(arrParam) Then ArrLen = 0: Exit Function
+
+    If iDimension <= 0 Then iDimension = 1
+
+    ArrLen = UBound(arrParam, iDimension) - LBound(arrParam, iDimension) + 1
 End Function
 
 Function fEnlargeArayWithValue(ByRef arr, aValue, Optional aPreserve As Boolean = True, Optional lIncrementNum As Integer = 1) As Long
@@ -2825,4 +2836,61 @@ Function fGetAllFilesUnderFolder(sFolder As String)
     Erase arrOut
 End Function
 
+Function fPasteAppendDictionaryToSheet(dict As Dictionary, sht As Worksheet, Optional alStartRow As Long = 0, Optional alStartCol As Long = 1, Optional asDelimiter As String = "|")
+    If dict.Count <= 0 Then Exit Function
+    If alStartRow = 0 Then alStartRow = fGetValidMaxRow(sht) + 1
+    
+    Dim aKey
+    Dim arr
+    Dim arrOut()
+    Dim i As Long
+    Dim j As Integer
+    
+    Dim sKey As String
+    Dim sItem As String
+    Dim iKeyEleNum As Integer
+    Dim iItemEleNum As Integer
+    sKey = dict.Keys(0)
+    sItem = dict.Items(0)
+    
+    iKeyEleNum = Len(sKey) - Len(Replace(sKey, asDelimiter, "")) + 1
+    iItemEleNum = Len(sItem) - Len(Replace(sItem, asDelimiter, "")) + 1
 
+    ReDim arrOut(1 To dict.Count, 1 To iKeyEleNum + iItemEleNum)
+
+    Dim iMaxCol As Integer
+    i = 0
+    iMaxCol = 0
+    For Each aKey In dict.Keys
+        iMaxCol = 0
+        i = i + 1
+        
+        If iKeyEleNum <= 1 Then
+            iMaxCol = iMaxCol + 1
+            arrOut(i, iMaxCol) = aKey
+        Else
+            arr = Split(aKey, asDelimiter)
+            For j = 1 To iKeyEleNum
+                iMaxCol = iMaxCol + 1
+                arrOut(i, iMaxCol) = arr(j - 1)
+            Next
+            Erase arr
+        End If
+        
+        sItem = dict(aKey)
+        If iItemEleNum <= 1 Then
+            iMaxCol = iMaxCol + 1
+            arrOut(i, iMaxCol) = sItem
+        Else
+            arr = Split(sItem, asDelimiter)
+            For j = 1 To iItemEleNum
+                iMaxCol = iMaxCol + 1
+                arrOut(i, iMaxCol) = arr(j - 1)
+            Next
+            Erase arr
+        End If
+    Next
+    
+    sht.Cells(alStartRow, alStartCol).Resize(ArrLen(arrOut, 1), ArrLen(arrOut, 2)).value = arrOut
+    Erase arrOut
+End Function

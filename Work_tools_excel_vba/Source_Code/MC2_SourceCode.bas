@@ -761,7 +761,7 @@ Function fInitialization()
     
     Application.ScreenUpdating = False
     
-    If Workbooks.Count > 0 Then Call fRemoveFilterForAllSheets
+    'If Workbooks.Count > 0 Then Call fRemoveFilterForAllSheets
 End Function
 
 Function fExportSourceCodeToFolder(sFolderExportedTo As String, Optional wb As Workbook)

@@ -32,6 +32,6 @@ Private Sub Workbook_Open()
 End Sub
 
 Public Sub sub_WorkBookInitialization()
-    Call fNavagatorInitialize
+    'Call fNavagatorInitialize
     
 End Sub

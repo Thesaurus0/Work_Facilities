@@ -1,6 +1,7 @@
 Attribute VB_Name = "MB_0_RibbonButton"
 Option Explicit
 Option Base 1
+Private Const POTENTIOAL_UNSOLVED_EXTERNAL_LINES = "Potential_Links"
 
 Sub subMain_OpenAcitveWorkbookLocation()
     If Workbooks.Count <= 0 Then Exit Sub
@@ -586,5 +587,536 @@ Function fSetReplaceUnifyErrorRowCount_CZLSales2Comp(ByVal rowCnt As Long) As Lo
     Call fSetSpecifiedConfigCellValue(shtSysConf, "[Facility For Testing]", "Value", "Setting Item ID=REPLACE_UNIFY_ERR_ROW_COUNT_CZL_SALES_2_COMPANIES", CStr(rowCnt))
 End Function
 
- 
+Sub subMain_CloneMacro()
+    If Workbooks.Count <= 0 Then MsgBox "Please open the macro first.": Exit Sub
+    
+    Dim wbSource As Workbook
+    Dim wbTarget As Workbook
+     
+    Dim sSourceMacro As String
+    Dim sTargetMacro As String
+    Dim sExportParentFolder As String
+    Dim sSourceCodeFolder_Left As String
+    Dim sSourceCodeFolder_Right As String
+    Dim bSameFileName As Boolean
+    
+    'On Error GoTo error_handling
+    
+    Call fInitialization
+    
+    FrmCloneMacro.Show
+    If gsRtnValueOfForm <> CONST_SUCCESS Then GoTo error_handling
+    
+    sSourceMacro = fGetValue(RANGE_CloneMacro_Source)
+    sTargetMacro = fGetValue(RANGE_CloneMacro_Target)
+    
+    Application.EnableEvents = False
+    Application.DisplayAlerts = False
+    
+    Set wbSource = Workbooks(fGetFileBaseName(sSourceMacro))
+    
+    If fFileExists(sTargetMacro) Then
+        Dim wb As Workbook
+        Dim bAlreadyOpened As Boolean
+        bAlreadyOpened = False
+        
+        If fExcelFileIsOpen(sTargetMacro, wb) Then
+            If UCase(wb.FullName) <> UCase(sTargetMacro) Then
+                fErr "Another excel file with the same file name has already been open, please close it first" & vbCr _
+                 & "File Name: " & wb.Name & vbCr & vbCr _
+                 & "File fullpath: " & wb.FullName
+            Else
+                Set wbTarget = wb
+                bAlreadyOpened = True
+            End If
+        End If
+        
+        If Not bAlreadyOpened Then
+            fMsgBox "The macro already exists, please open it first.": fErr
+        End If
+    Else
+        Set wbTarget = Workbooks.Add(xlWBATWorksheet)
+        Call wbTarget.SaveAs(sTargetMacro, xlOpenXMLWorkbookMacroEnabled)
+    End If
+    
+    Call fCopyAllItemsToAnotherMacroCloneMacro(wbSource, wbTarget)
+    
+    Call fListAllExternalLinks(wbTarget)
+    Call fListAllNames(wbTarget)
+    Call fListAllValidation(wbTarget)
+    
+    wbTarget.Save
+    wbTarget.Activate
+     
+error_handling:
+    Set wbSource = Nothing
+    Set wbTarget = Nothing
+    If gsRtnValueOfForm <> CONST_SUCCESS Then GoTo reset_excel_options
+    If gErrNum <> 0 Then GoTo reset_excel_options
+    
+    If fCheckIfUnCapturedExceptionAbnormalError Then GoTo reset_excel_options
+    
+    fMsgBox "Done, you may still need to check the sheet [" & POTENTIOAL_UNSOLVED_EXTERNAL_LINES & "] to check if any external link exists and need to be fixed manually. ", vbExclamation
+reset_excel_options:
+    Err.Clear
+    fClearGlobalVarialesResetOption
+    Application.EnableEvents = True
+    Application.DisplayAlerts = True
+End Sub
+
+Sub subMain_GenCodeSnippet()
+    On Error GoTo error_handling
+    
+    Call fInitialization
+    
+    frmCodeSnippet.Show
+    If gsRtnValueOfForm = CONST_CANCEL Then fErr
+     
+    Dim sContent As String
+    
+    If gsRtnValueOfForm = "ENUM" Then
+        sContent = fGenCodeSnippet_Enum_BaseOnSelection
+'    ElseIf gsRtnValueOfForm = "FOR_LOOP" Then
+'        sContent = fGenCodeSnippet_ForLoop
+'    ElseIf gsRtnValueOfForm = "SELECT_CASE" Then
+'        sContent = fGenCodeSnippet_SELECT_CASE
+    Else
+        fErr "gsRtnValueOfForm not covered in subMain_GenCodeSnippet: " & gsRtnValueOfForm
+    End If
+    
+    ClipBoard_SetData sContent
+error_handling:
+    If gsRtnValueOfForm <> CONST_SUCCESS Then GoTo reset_excel_options
+    If gErrNum <> 0 Then GoTo reset_excel_options
+    
+    If fCheckIfUnCapturedExceptionAbnormalError Then GoTo reset_excel_options
+    
+    fMsgBox "Done, you may still need to check the sheet [" & POTENTIOAL_UNSOLVED_EXTERNAL_LINES & "] to check if any external link exists and need to be fixed manually. ", vbExclamation
+reset_excel_options:
+    Err.Clear
+    fClearGlobalVarialesResetOption
+'    Application.EnableEvents = True
+'    Application.DisplayAlerts = True
+End Sub
+Private Function fGenCodeSnippet_Enum_BaseOnSelection() As String
+    Dim sContent As String
+    Dim rgSelection As Range
+    Dim i As Integer
+    Dim aCell As Range
+    Dim sElem As String
+    Dim aRg As Range
+    
+    If Workbooks.Count > 0 Then Set rgSelection = Selection
+    
+    sContent = "Enum PleaseChangeIt"
+    sContent = sContent & vbCr & "    [_first] = 1"
+    
+    If Not rgSelection Is Nothing Then
+        i = 0
+        If rgSelection.Rows.Count > 1 And rgSelection.Columns.Count <= 1 Then
+            For Each aRg In rgSelection.Rows
+                If Len(Trim(aRg.Cells(1, 1).value)) > 0 Then
+                    sElem = Trim(aRg.Cells(1, 1).value)
+                    i = i + 1
+                    If InStr(sElem, " ") > 0 Or InStr(sElem, "_") > 0 Or InStr(sElem, "\") > 0 Or InStr(sElem, "/") > 0 Then
+                        sElem = WorksheetFunction.Proper(sElem)
+                    End If
+                    sElem = Replace(sElem, "_", "")
+                    sElem = Replace(sElem, "/", "")
+                    sElem = Replace(sElem, "\", "")
+                    sElem = Replace(sElem, " ", "")
+                    
+                    sContent = sContent & vbCr _
+                             & Left("    " & sElem & " = " & i & Space(50), 50) & "'" & fNum2Letter(i)
+                End If
+            Next
+            
+            sContent = sContent & vbCr & "    [_last] = " & sElem
+        ElseIf rgSelection.Rows.Count <= 1 And rgSelection.Columns.Count > 1 Then
+            For Each aRg In rgSelection.Columns
+                If Len(Trim(aRg.Cells(1, 1).value)) > 0 Then
+                    sElem = Trim(aRg.Cells(1, 1).value)
+                    i = i + 1
+                    If InStr(sElem, " ") > 0 Or InStr(sElem, "_") > 0 Or InStr(sElem, "\") > 0 Or InStr(sElem, "/") > 0 Then
+                        sElem = WorksheetFunction.Proper(sElem)
+                    End If
+                    sElem = Replace(sElem, "_", "")
+                    sElem = Replace(sElem, "/", "")
+                    sElem = Replace(sElem, "\", "")
+                    sElem = Replace(sElem, " ", "")
+                    
+                    sContent = sContent & vbCr _
+                             & Left("    " & sElem & " = " & i & Space(50), 50) & "'" & fNum2Letter(i)
+                End If
+            Next
+            
+            sContent = sContent & vbCr & "    [_last] = " & sElem
+        Else
+            For Each aCell In rgSelection.Cells
+                If Len(Trim(aCell.value)) > 0 Then
+                    sElem = Trim(aCell.value)
+                    i = i + 1
+                    If InStr(sElem, " ") > 0 Or InStr(sElem, "_") > 0 Or InStr(sElem, "\") > 0 Or InStr(sElem, "/") > 0 Then
+                        sElem = WorksheetFunction.Proper(sElem)
+                    End If
+                    sElem = Replace(sElem, " ", "")
+                    
+                    sContent = sContent & vbCr _
+                             & Left("    " & sElem & " = " & i & Space(50), 50) & "'" & fNum2Letter(i)
+                End If
+            Next
+            sContent = sContent & vbCr & "    [_last] = " & sElem
+        End If
+    Else
+        For i = 1 To 20
+            sContent = sContent & vbCr _
+                     & Left("    " & "Col_" & i & " = " & i & Space(50), 50) & "'" & fNum2Letter(i)
+        Next
+        sContent = sContent & vbCr & "    [_last] = " & "Col_" & i
+    End If
+    
+    sContent = sContent & vbCr & "End Enum"
+    fGenCodeSnippet_Enum_BaseOnSelection = sContent
+End Function
+
+Function fListAllExternalLinks(wb As Workbook)
+    Dim rg As Range
+    Dim eachcell As Range
+    Dim dict As Dictionary
+    Dim sht As Worksheet
+    
+    Set dict = New Dictionary
+    For Each sht In wb.Worksheets
+        On Error Resume Next
+        Set rg = sht.UsedRange.SpecialCells(xlCellTypeFormulas)
+    
+        If rg Is Nothing Then GoTo next_one
+        
+        For Each eachcell In rg.Cells
+            If InStr(1, eachcell.Formula, "[") > 0 Then
+                If eachcell.MergeCells Then
+                    If eachcell.Address = eachcell.MergeArea.Cells(1, 1).Address Then
+                        dict.Add "Formula: " & DELIMITER _
+                                & "'" & sht.Name & DELIMITER _
+                                & "'" & eachcell.MergeArea.Address & DELIMITER _
+                                & "'" & eachcell.Formula, ""
+                    End If
+                Else
+                    dict.Add "Formula: " & DELIMITER _
+                            & "'" & sht.Name & DELIMITER _
+                            & "'" & eachcell.Address & DELIMITER _
+                            & "'" & eachcell.Formula, ""
+                End If
+            End If
+        Next
+        
+next_one:
+    Next
+    
+    Dim extLink
+    For Each extLink In wb.LinkSources
+        If Not fAreSame(CStr(extLink), ThisWorkbook.FullName) Then
+            dict.Add "Link: " & DELIMITER _
+                    & "'" & sht.Name & DELIMITER _
+                    & "'" & extLink & DELIMITER _
+                    & "", ""
+        End If
+    Next
+    On Error GoTo 0
+    
+    Call fPastePotentialRiskLinkstoManuallyHandleSheet(dict, wb, Array("Type", "sheet name", "cell", "formula/link name"))
+    Set dict = Nothing
+End Function
+Function fListAllNames(wb As Workbook)
+    Dim eachName As Name
+    Dim sName As String
+    Dim dict As Dictionary
+    Set dict = New Dictionary
+    Dim sht As Worksheet
+    
+    For Each sht In wb.Worksheets
+        For Each eachName In sht.Names
+            sName = eachName.Name
+            
+            If InStr(1, sName, "!") > 0 Then sName = Split(sName, "!")(1)
+            On Error Resume Next
+                dict.Add "Name: " & DELIMITER _
+                        & "'" & sName & DELIMITER _
+                        & "'" & eachName.Parent.Name & DELIMITER _
+                        & "'" & eachName.RefersTo & DELIMITER _
+                        & "'" & eachName.value & DELIMITER _
+                        & "'" & eachName.RefersToLocal, ""
+            On Error GoTo 0
+        Next
+    Next
+    
+    For Each eachName In wb.Names
+        sName = eachName.Name
+        
+        If InStr(1, sName, "!") > 0 Then sName = Split(sName, "!")(1)
+        On Error Resume Next
+            dict.Add "Name: " & DELIMITER _
+                    & "'" & sName & DELIMITER _
+                    & "'" & eachName.Parent.Name & DELIMITER _
+                    & "'" & eachName.RefersTo & DELIMITER _
+                    & "'" & eachName.value & DELIMITER _
+                    & "'" & eachName.RefersToLocal, ""
+        On Error GoTo 0
+    Next
+    
+    Call fPastePotentialRiskLinkstoManuallyHandleSheet(dict, wb, Array("Type", "name's name", "whhere name is", "refers to", "value", "RefersToLocal"))
+    Set dict = Nothing
+End Function
+Function fListAllValidation(wb As Workbook)
+    Dim rg As Range
+    Dim eachcell As Range
+    Dim dict As Dictionary
+    Dim sht As Worksheet
+    Dim vD As Validation
+    Dim vdType As XlDVType
+    Dim sType As String
+    
+    Set dict = New Dictionary
+    For Each sht In wb.Worksheets
+        On Error Resume Next
+        Set rg = sht.UsedRange.SpecialCells(xlCellTypeAllValidation)
+    
+        If rg Is Nothing Then GoTo next_one
+        
+        For Each eachcell In rg.Cells
+            Set vD = eachcell.Validation
+            vdType = vD.Type
+             
+            Select Case vdType
+                Case xlValidateCustom
+                    sType = "xlValidateCustom"
+                Case xlValidateDate
+                    sType = "xlValidateDate"
+                Case xlValidateDecimal
+                    sType = "xlValidateDecimal"
+                Case xlValidateInputOnly
+                    sType = "xlValidateInputOnly"
+                    GoTo next_one
+                Case xlValidateList
+                    sType = "xlValidateList"
+                Case xlValidateTextLength
+                    sType = "xlValidateTextLength"
+                Case xlValidateTime
+                    sType = "xlValidateTime"
+                Case xlValidateWholeNumber
+                    sType = "xlValidateWholeNumber"
+                Case Else
+                    sType = "Unknow validation Type"
+            End Select
+            
+            If eachcell.MergeCells Then
+                If eachcell.Address = eachcell.MergeArea.Cells(1, 1).Address Then
+                    dict.Add "Validation: " & DELIMITER _
+                            & "'" & sht.Name & DELIMITER _
+                            & "'" & eachcell.MergeArea.Address & DELIMITER _
+                            & "'" & vD.Formula1 & DELIMITER _
+                            & "'" & vD.Formula2 & DELIMITER _
+                            & "'" & sType, ""
+                End If
+            Else
+                dict.Add "Validation: " & DELIMITER _
+                        & "'" & sht.Name & DELIMITER _
+                        & "'" & eachcell.Address & DELIMITER _
+                        & "'" & vD.Formula1 & DELIMITER _
+                        & "'" & vD.Formula2 & DELIMITER _
+                        & "'" & sType, ""
+            End If
+        
+        Next
+        On Error GoTo 0
+next_one:
+    Next
+     
+    Call fPastePotentialRiskLinkstoManuallyHandleSheet(dict, wb, Array("Type", "sheet name", "cell", "formula1", "formula2", "validation type"))
+    Set dict = Nothing
+End Function
+
+Function fPastePotentialRiskLinkstoManuallyHandleSheet(dict As Dictionary, wb As Workbook, arrHeader)
+    If dict.Count <= 0 Then Exit Function
+    
+    Dim shtLog As Worksheet
+    If Not fSheetExists(POTENTIOAL_UNSOLVED_EXTERNAL_LINES, , wb) Then
+        Set shtLog = fAddNewSheet(POTENTIOAL_UNSOLVED_EXTERNAL_LINES, wb)
+    Else
+        Set shtLog = wb.Worksheets(POTENTIOAL_UNSOLVED_EXTERNAL_LINES)
+    End If
+    
+    Dim lRow As Long
+    
+    lRow = fGetValidMaxRow(shtLog)
+    If lRow = 0 Then
+        lRow = 1
+    Else
+        lRow = lRow + 2
+    End If
+    shtLog.Cells(lRow, 1).Resize(1, ArrLen(arrHeader)).value = arrHeader
+    
+    Call fPasteAppendDictionaryToSheet(dict, shtLog)
+    Set shtLog = Nothing
+End Function
+
+Function fCopyAllItemsToAnotherMacroCloneMacro(wbSource As Workbook, wbTarget As Workbook)
+    Dim vbSourcePrj As VBIDE.VBProject
+    Dim vbTargetPrj As VBIDE.VBProject
+    
+    Set vbSourcePrj = wbSource.VBProject
+    Set vbTargetPrj = wbTarget.VBProject
+    
+    '========== clean first ==============================
+    Dim sTmpShtName As String
+    sTmpShtName = fGenRandomUniqueString()
+    Call fAddNewSheet(sTmpShtName, wbTarget)
+    
+    Dim sht As Worksheet
+    For Each sht In wbTarget.Worksheets
+        If Not fAreSame(sht.Name, sTmpShtName) Then
+            sht.Visible = xlSheetVisible
+            sht.Delete
+        End If
+    Next
+    
+    Dim vbComp As VBComponent
+    For Each vbComp In vbTargetPrj.VBComponents
+        If vbComp.Type = vbext_ct_StdModule _
+        Or vbComp.Type = vbext_ct_ClassModule _
+        Or vbComp.Type = vbext_ct_MSForm Then
+            Call vbTargetPrj.VBComponents.Remove(vbComp)
+        Else
+            '
+        End If
+    Next
+    '=====================================================
+    
+    '========== export all module's source code ==========
+    Dim sSourceFolder As String
+    sSourceFolder = wbSource.Path & "\TempFolder_SourceCode"
+    If fFolderExists(sSourceFolder) Then
+        fGetFSO
+        gFSO.DeleteFolder sSourceFolder, True
+    End If
+    MkDir sSourceFolder
+    
+    For Each vbComp In vbSourcePrj.VBComponents
+        If vbComp.Type = vbext_ct_StdModule _
+        Or vbComp.Type = vbext_ct_ClassModule _
+        Or vbComp.Type = vbext_ct_MSForm Then
+            vbComp.Export sSourceFolder & "\" & vbComp.Name & ".bas"
+        End If
+    Next
+    Set vbComp = Nothing
+    '=====================================================
+    
+    '================ copy all sheets first ==============
+    For Each sht In wbSource.Worksheets
+        If fSheetExistsByCodeName(sht.CodeName, , wbTarget) Then
+            Dim sTmpOrig As String
+            sTmpOrig = sTmpShtName
+            sTmpShtName = fGenRandomUniqueString()
+            Call fAddNewSheet(sTmpShtName, wbTarget)
+            Call fDeleteSheet(sTmpOrig, wbTarget)
+        End If
+        
+        sht.Visible = xlSheetVisible
+        sht.Copy after:=wbTarget.Worksheets(wbTarget.Worksheets.Count())
+    Next
+    
+    Call fDeleteSheet(sTmpShtName, wbTarget)
+    '=====================================================
+    
+    '================ import all modules    ==============
+    On Error Resume Next
+    Dim aFile As File
+    Dim aModule As VBComponent
+    For Each aFile In gFSO.GetFolder(sSourceFolder).Files
+        Set aModule = vbTargetPrj.VBComponents(gFSO.GetBaseName(aFile.Name))
+        If Err.Number = 0 Then
+            If aModule Is Nothing Then
+                vbTargetPrj.VBComponents.Import aFile.Path
+                Call fSleep(10)
+            End If
+        Else
+            Err.Clear
+            vbTargetPrj.VBComponents.Import aFile.Path
+            Call fSleep(10)
+        End If
+    Next
+    On Error GoTo 0
+    '=====================================================
+    
+    '================ add all reference     ==============
+    On Error Resume Next
+    Dim eachRef As Reference
+    
+    For Each eachRef In vbSourcePrj.References
+        Dim tmpRef As Reference
+        Set tmpRef = vbTargetPrj.References(eachRef.Name)
+        If Err.Number = 0 Then
+            If tmpRef Is Nothing Then
+                Call vbTargetPrj.References.AddFromGuid(eachRef.GUID, eachRef.Major, eachRef.Minor)
+                Call fSleep(10)
+            End If
+        Else
+            Err.Clear
+            Call vbTargetPrj.References.AddFromGuid(eachRef.GUID, eachRef.Major, eachRef.Minor)
+            Call fSleep(10)
+        End If
+    Next
+    
+    On Error GoTo 0
+    '=====================================================
+    
+    '================ change link           ==============
+    On Error Resume Next
+    Call wbTarget.ChangeLink(wbSource.Name, wbTarget.Name)
+    On Error GoTo 0
+    '=====================================================
+    
+    '================ thisworkbook module code==============
+    Dim sCodeScript As String
+    Dim sourceCodeM As CodeModule
+    Dim targetCodeM As CodeModule
+    
+    Set sourceCodeM = vbSourcePrj.VBComponents("ThisWorkbook").CodeModule
+    Set targetCodeM = vbTargetPrj.VBComponents("ThisWorkbook").CodeModule
+    
+    sCodeScript = sourceCodeM.Lines(1, sourceCodeM.CountOfLines)
+    targetCodeM.DeleteLines 1, targetCodeM.CountOfLines
+    targetCodeM.AddFromString sCodeScript
+    
+    Set sourceCodeM = Nothing
+    Set targetCodeM = Nothing
+    '=====================================================
+    
+    Set vbSourcePrj = Nothing
+    Set vbTargetPrj = Nothing
+End Function
   
+Function fAreSame(sA As String, sB As String, Optional bCaseSensitive As Boolean = False, Optional bTrim As Boolean = True) As Boolean
+    If bCaseSensitive Then
+        If bTrim Then
+            fAreSame = CBool(Trim(sA) = Trim(sB))
+        Else
+            fAreSame = CBool(sA = sB)
+        End If
+    Else
+        If bTrim Then
+            fAreSame = CBool(UCase(Trim(sA)) = UCase(Trim(sB)))
+        Else
+            fAreSame = CBool(UCase(sA) = UCase(sB))
+        End If
+    End If
+End Function
+
+Function fSleep(howlong As Long)
+    Dim i As Long
+    
+    howlong = howlong * 300
+    For i = 0 To howlong
+        DoEvents
+    Next
+End Function

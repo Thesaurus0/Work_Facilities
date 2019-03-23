@@ -1546,91 +1546,91 @@ Private Sub lblDate67_Click(): ClickControl lblDate67: End Sub
 ' label that has been hovered over.
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 'User hovered over the date background
-Private Sub bgDate11_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate11: End Sub
-Private Sub bgDate12_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate12: End Sub
-Private Sub bgDate13_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate13: End Sub
-Private Sub bgDate14_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate14: End Sub
-Private Sub bgDate15_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate15: End Sub
-Private Sub bgDate16_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate16: End Sub
-Private Sub bgDate17_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate17: End Sub
-Private Sub bgDate21_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate21: End Sub
-Private Sub bgDate22_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate22: End Sub
-Private Sub bgDate23_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate23: End Sub
-Private Sub bgDate24_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate24: End Sub
-Private Sub bgDate25_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate25: End Sub
-Private Sub bgDate26_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate26: End Sub
-Private Sub bgDate27_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate27: End Sub
-Private Sub bgDate31_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate31: End Sub
-Private Sub bgDate32_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate32: End Sub
-Private Sub bgDate33_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate33: End Sub
-Private Sub bgDate34_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate34: End Sub
-Private Sub bgDate35_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate35: End Sub
-Private Sub bgDate36_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate36: End Sub
-Private Sub bgDate37_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate37: End Sub
-Private Sub bgDate41_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate41: End Sub
-Private Sub bgDate42_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate42: End Sub
-Private Sub bgDate43_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate43: End Sub
-Private Sub bgDate44_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate44: End Sub
-Private Sub bgDate45_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate45: End Sub
-Private Sub bgDate46_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate46: End Sub
-Private Sub bgDate47_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate47: End Sub
-Private Sub bgDate51_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate51: End Sub
-Private Sub bgDate52_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate52: End Sub
-Private Sub bgDate53_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate53: End Sub
-Private Sub bgDate54_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate54: End Sub
-Private Sub bgDate55_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate55: End Sub
-Private Sub bgDate56_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate56: End Sub
-Private Sub bgDate57_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate57: End Sub
-Private Sub bgDate61_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate61: End Sub
-Private Sub bgDate62_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate62: End Sub
-Private Sub bgDate63_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate63: End Sub
-Private Sub bgDate64_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate64: End Sub
-Private Sub bgDate65_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate65: End Sub
-Private Sub bgDate66_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate66: End Sub
-Private Sub bgDate67_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate67: End Sub
+Private Sub bgDate11_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate11: End Sub
+Private Sub bgDate12_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate12: End Sub
+Private Sub bgDate13_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate13: End Sub
+Private Sub bgDate14_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate14: End Sub
+Private Sub bgDate15_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate15: End Sub
+Private Sub bgDate16_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate16: End Sub
+Private Sub bgDate17_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate17: End Sub
+Private Sub bgDate21_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate21: End Sub
+Private Sub bgDate22_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate22: End Sub
+Private Sub bgDate23_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate23: End Sub
+Private Sub bgDate24_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate24: End Sub
+Private Sub bgDate25_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate25: End Sub
+Private Sub bgDate26_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate26: End Sub
+Private Sub bgDate27_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate27: End Sub
+Private Sub bgDate31_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate31: End Sub
+Private Sub bgDate32_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate32: End Sub
+Private Sub bgDate33_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate33: End Sub
+Private Sub bgDate34_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate34: End Sub
+Private Sub bgDate35_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate35: End Sub
+Private Sub bgDate36_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate36: End Sub
+Private Sub bgDate37_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate37: End Sub
+Private Sub bgDate41_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate41: End Sub
+Private Sub bgDate42_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate42: End Sub
+Private Sub bgDate43_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate43: End Sub
+Private Sub bgDate44_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate44: End Sub
+Private Sub bgDate45_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate45: End Sub
+Private Sub bgDate46_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate46: End Sub
+Private Sub bgDate47_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate47: End Sub
+Private Sub bgDate51_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate51: End Sub
+Private Sub bgDate52_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate52: End Sub
+Private Sub bgDate53_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate53: End Sub
+Private Sub bgDate54_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate54: End Sub
+Private Sub bgDate55_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate55: End Sub
+Private Sub bgDate56_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate56: End Sub
+Private Sub bgDate57_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate57: End Sub
+Private Sub bgDate61_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate61: End Sub
+Private Sub bgDate62_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate62: End Sub
+Private Sub bgDate63_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate63: End Sub
+Private Sub bgDate64_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate64: End Sub
+Private Sub bgDate65_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate65: End Sub
+Private Sub bgDate66_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate66: End Sub
+Private Sub bgDate67_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate67: End Sub
 'User hovered over the actual date label
-Private Sub lblDate11_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate11: End Sub
-Private Sub lblDate12_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate12: End Sub
-Private Sub lblDate13_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate13: End Sub
-Private Sub lblDate14_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate14: End Sub
-Private Sub lblDate15_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate15: End Sub
-Private Sub lblDate16_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate16: End Sub
-Private Sub lblDate17_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate17: End Sub
-Private Sub lblDate21_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate21: End Sub
-Private Sub lblDate22_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate22: End Sub
-Private Sub lblDate23_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate23: End Sub
-Private Sub lblDate24_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate24: End Sub
-Private Sub lblDate25_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate25: End Sub
-Private Sub lblDate26_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate26: End Sub
-Private Sub lblDate27_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate27: End Sub
-Private Sub lblDate31_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate31: End Sub
-Private Sub lblDate32_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate32: End Sub
-Private Sub lblDate33_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate33: End Sub
-Private Sub lblDate34_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate34: End Sub
-Private Sub lblDate35_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate35: End Sub
-Private Sub lblDate36_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate36: End Sub
-Private Sub lblDate37_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate37: End Sub
-Private Sub lblDate41_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate41: End Sub
-Private Sub lblDate42_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate42: End Sub
-Private Sub lblDate43_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate43: End Sub
-Private Sub lblDate44_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate44: End Sub
-Private Sub lblDate45_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate45: End Sub
-Private Sub lblDate46_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate46: End Sub
-Private Sub lblDate47_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate47: End Sub
-Private Sub lblDate51_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate51: End Sub
-Private Sub lblDate52_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate52: End Sub
-Private Sub lblDate53_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate53: End Sub
-Private Sub lblDate54_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate54: End Sub
-Private Sub lblDate55_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate55: End Sub
-Private Sub lblDate56_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate56: End Sub
-Private Sub lblDate57_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate57: End Sub
-Private Sub lblDate61_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate61: End Sub
-Private Sub lblDate62_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate62: End Sub
-Private Sub lblDate63_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate63: End Sub
-Private Sub lblDate64_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate64: End Sub
-Private Sub lblDate65_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate65: End Sub
-Private Sub lblDate66_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate66: End Sub
-Private Sub lblDate67_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single): HoverControl bgDate67: End Sub
+Private Sub lblDate11_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate11: End Sub
+Private Sub lblDate12_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate12: End Sub
+Private Sub lblDate13_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate13: End Sub
+Private Sub lblDate14_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate14: End Sub
+Private Sub lblDate15_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate15: End Sub
+Private Sub lblDate16_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate16: End Sub
+Private Sub lblDate17_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate17: End Sub
+Private Sub lblDate21_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate21: End Sub
+Private Sub lblDate22_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate22: End Sub
+Private Sub lblDate23_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate23: End Sub
+Private Sub lblDate24_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate24: End Sub
+Private Sub lblDate25_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate25: End Sub
+Private Sub lblDate26_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate26: End Sub
+Private Sub lblDate27_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate27: End Sub
+Private Sub lblDate31_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate31: End Sub
+Private Sub lblDate32_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate32: End Sub
+Private Sub lblDate33_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate33: End Sub
+Private Sub lblDate34_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate34: End Sub
+Private Sub lblDate35_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate35: End Sub
+Private Sub lblDate36_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate36: End Sub
+Private Sub lblDate37_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate37: End Sub
+Private Sub lblDate41_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate41: End Sub
+Private Sub lblDate42_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate42: End Sub
+Private Sub lblDate43_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate43: End Sub
+Private Sub lblDate44_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate44: End Sub
+Private Sub lblDate45_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate45: End Sub
+Private Sub lblDate46_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate46: End Sub
+Private Sub lblDate47_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate47: End Sub
+Private Sub lblDate51_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate51: End Sub
+Private Sub lblDate52_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate52: End Sub
+Private Sub lblDate53_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate53: End Sub
+Private Sub lblDate54_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate54: End Sub
+Private Sub lblDate55_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate55: End Sub
+Private Sub lblDate56_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate56: End Sub
+Private Sub lblDate57_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate57: End Sub
+Private Sub lblDate61_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate61: End Sub
+Private Sub lblDate62_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate62: End Sub
+Private Sub lblDate63_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate63: End Sub
+Private Sub lblDate64_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate64: End Sub
+Private Sub lblDate65_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate65: End Sub
+Private Sub lblDate66_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate66: End Sub
+Private Sub lblDate67_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single): HoverControl bgDate67: End Sub
 
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -1639,17 +1639,17 @@ Private Sub lblDate67_MouseMove(ByVal Button As Integer, ByVal Shift As Integer,
 ' These three subs restore the last hovered date label to its original color when user is
 ' no longer hovering over any date labels.
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-Private Sub UserForm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+Private Sub UserForm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single)
     If HoverControlName <> vbNullString Then
         Me.Controls(HoverControlName).BackColor = HoverControlColor
     End If
 End Sub
-Private Sub frameCalendar_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+Private Sub frameCalendar_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single)
     If HoverControlName <> vbNullString Then
         Me.Controls(HoverControlName).BackColor = HoverControlColor
     End If
 End Sub
-Private Sub bgDayLabels_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+Private Sub bgDayLabels_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal x As Single, ByVal Y As Single)
     If HoverControlName <> vbNullString Then
         Me.Controls(HoverControlName).BackColor = HoverControlColor
     End If

@@ -447,6 +447,33 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
                 Case "ENABLED":     val = True
                 Case "ACTION":      Call subMain_CommentOutScanUselessFunctions
             End Select
+            
+        Case "btnCloneMacro"
+            Select Case sType
+                Case "LABEL":   val = "Clone Macro"
+                Case "IMAGE":   val = "PageOrientationPortraitLandscape"
+                Case "SIZE":        val = "false"    'large=true, normal=false
+                Case "SHOW_IMAGE":  val = "true"
+                Case "SUPERTIP":    val = ""
+                Case "SUPERTIP":    val = ""
+                Case "SCREENTIP":   val = ""
+                
+                Case "ENABLED":     val = True
+                Case "ACTION":      Call subMain_CloneMacro
+            End Select
+        Case "btnGenCodeSnippet"
+            Select Case sType
+                Case "LABEL":   val = "Gen Code Snippet"
+                Case "IMAGE":   val = "PageOrientationPortraitLandscape"
+                Case "SIZE":        val = "false"    'large=true, normal=false
+                Case "SHOW_IMAGE":  val = "true"
+                Case "SUPERTIP":    val = ""
+                Case "SUPERTIP":    val = ""
+                Case "SCREENTIP":   val = ""
+                Case "ENABLED":     val = True
+                Case "ACTION":      Call subMain_GenCodeSnippet
+            End Select
+            
     End Select
 End Function
 

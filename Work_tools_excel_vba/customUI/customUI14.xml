@@ -27,19 +27,23 @@
 					<button id="btnRemoveFilter" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
 					<button id="btnSortSheetBySelected" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
 				</group> 
+				<group id="grpSheetOpr" label="Sheet Operation"> 
+					<button id="btnShowAllVeryHideSheets" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+				</group>
+				<group id="grpListAllSheetName" label="Sheets"> 
+					<button id="btnListAllSheetName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnListAllSheetCodeName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+				</group>
 				<group id="grpGenList" label="Gen List">
 					<button id="btnGenAlphabetList" label="Gen A…XFD" size="normal" imageMso="A" onAction="btnGenAlphabetList_onAction"  />
 					<button id="btnGenNumberList" label="Gen 1…9999" size="normal" imageMso="_1" onAction="btnGenNumberList_onAction"  />
 				</group> 
 			</tab>
 			<tab id="tabForDev_20180701" label="Dev Tools">
-				<group id="grpSheetOpr" label="Sheet Operation"> 
-					<button id="btnShowAllVeryHideSheets" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
-				</group>
 				<group id="grpSourceCode" label="Synchronize By Function"> 
-					<button id="btnExportSourceCode" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnExportSourceCode"            getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
 					<button id="btnValidateLocalSourceCodeFile" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
-					<button id="btnValidateMacroWithLocal" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+					<button id="btnValidateMacroWithLocal"      getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
 				</group>
 				<group id="grpSourceCodeCommonLib" label="Sync By Module"> 
 					<button id="btnCompareWithCommLib" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
@@ -51,13 +55,13 @@
 					<button id="btnCompareTwoMacros" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
 					<button id="btnListAllFunctionsInLocalFile" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
 				</group>
-				<group id="grpListAllSheetName" label="Sheets"> 
-					<button id="btnListAllSheetName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
-					<button id="btnListAllSheetCodeName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
-				</group>
 				<group id="grpScanSourceCode" label="Scan Source Code"> 
-					<button id="btnScanUselessFunctions" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
-					<button id="btnCommentOutScanUselessFunctions" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+					<button id="btnScanUselessFunctions"            getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnCommentOutScanUselessFunctions"  getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+					<button id="btnCloneMacro"                      getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
+				</group> 
+				<group id="grpCodeSnippet" label="Code Snippet"> 
+					<button id="btnGenCodeSnippet"            getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
 				</group> 
 				<group id="grpMisc" label="Misc"> 
 					<button id="btnResetOnError" label="Rest On Error" size="normal" imageMso="ControlToolboxOutlook" onAction="btnResetOnError_onAction" />

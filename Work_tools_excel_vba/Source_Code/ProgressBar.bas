@@ -19,10 +19,10 @@ Private Const WS_CAPTION As Long = &HC00000
 Private BarLength As Long  '= 300                 '进度条长度
 
 #If Win64 Then
-    Private Declare PtrSafe Function DrawMenuBar Lib "user32" (ByVal Hwnd As Long) As Long
-    Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal Hwnd As Long, ByVal nIndex As Long) As Long
-    Private Declare PtrSafe Function SetWindowLong Lib "user32" Alias "SetWindowLongA" (ByVal Hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
-    Private Declare PtrSafe Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+    Private Declare PtrSafe Function DrawMenuBar Lib "User32" (ByVal hwnd As Long) As Long
+    Private Declare PtrSafe Function GetWindowLong Lib "User32" Alias "GetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long) As Long
+    Private Declare PtrSafe Function SetWindowLong Lib "User32" Alias "SetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+    Private Declare PtrSafe Function FindWindow Lib "User32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
     Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
 #Else
     Private Declare Function DrawMenuBar Lib "user32" (ByVal hwnd As Long) As Long
@@ -145,14 +145,14 @@ End Sub
 
 Private Sub RemoveFormCaption(form As Object)
     If val(Application.Version) < 9 Then
-        Hwnd = FindWindow("ThunderXFrame", form.Caption)
+        hwnd = FindWindow("ThunderXFrame", form.Caption)
     Else
-        Hwnd = FindWindow("ThunderDFrame", form.Caption)
+        hwnd = FindWindow("ThunderDFrame", form.Caption)
     End If
-    IStyle = GetWindowLong(Hwnd, GWL_STYLE)
+    IStyle = GetWindowLong(hwnd, GWL_STYLE)
     IStyle = IStyle And Not WS_CAPTION
-    SetWindowLong Hwnd, GWL_STYLE, IStyle
-    DrawMenuBar Hwnd
+    SetWindowLong hwnd, GWL_STYLE, IStyle
+    DrawMenuBar hwnd
 End Sub
 
 Private Sub Class_Terminate()

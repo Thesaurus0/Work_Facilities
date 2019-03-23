@@ -1741,3 +1741,10 @@ Function fGetDictionayDelimiteredItemsCount(ByRef dict As Dictionary, Optional s
     fGetDictionayDelimiteredItemsCount = lCount
 End Function
 
+Function fGetValue(sRgName As String)
+    fGetValue = ThisWorkbook.Worksheets(1).Range(sRgName).value
+End Function
+Function fSetValue(sRgName As String, aValue)
+    ThisWorkbook.Worksheets(1).Range(sRgName).value = aValue
+    ThisWorkbook.Save
+End Function

@@ -14,7 +14,7 @@ Private Declare PtrSafe Function GetModuleHandleA Lib "kernel32" (ByVal lpModule
 Private Declare PtrSafe Function GetProcAddress Lib "kernel32" (ByVal hModule As LongPtr, _
 ByVal lpProcName As String) As LongPtr
 
-Private Declare PtrSafe Function DialogBoxParam Lib "user32" Alias "DialogBoxParamA" (ByVal hInstance As LongPtr, _
+Private Declare PtrSafe Function DialogBoxParam Lib "User32" Alias "DialogBoxParamA" (ByVal hInstance As LongPtr, _
 ByVal pTemplateName As LongPtr, ByVal hWndParent As LongPtr, _
 ByVal lpDialogFunc As LongPtr, ByVal dwInitParam As LongPtr) As Integer
 
