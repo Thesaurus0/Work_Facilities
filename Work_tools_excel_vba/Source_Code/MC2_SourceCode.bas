@@ -14,7 +14,7 @@ Sub subMain_ValidateMacroWithLocal(Optional wb As Workbook)
     Dim iCnt As Long
     
     Dim vbP As VBIDE.VBProject
-    Dim vbComp As VBIDE.VBComponent
+    Dim vbcomp As VBIDE.VBComponent
     Dim codeM As VBIDE.CodeModule
     
     On Error GoTo error_handling
@@ -55,14 +55,14 @@ Sub subMain_ValidateMacroWithLocal(Optional wb As Workbook)
     lLeftFileRowCnt = 0
     lRightFileRowCnt = 0
     
-    For Each vbComp In vbP.VBComponents
-        sModuleType = fGetComponentTypeToString(vbComp.Type)
+    For Each vbcomp In vbP.VBComponents
+        sModuleType = fGetComponentTypeToString(vbcomp.Type)
         
         If sModuleType = "UserForm" Then GoTo next_comp
         
-        Set codeM = vbComp.CodeModule
+        Set codeM = vbcomp.CodeModule
         
-        Set dictFunsInMacro = fGetAllSubFunctionsOfAModule(vbComp)
+        Set dictFunsInMacro = fGetAllSubFunctionsOfAModule(vbcomp)
         
         For j = 0 To dictFunsInMacro.Count - 1
             sFunName = dictFunsInMacro.Keys(j)
@@ -140,7 +140,7 @@ reset_excel_options:
     Err.Clear
     fClearGlobalVarialesResetOption
 End Sub
-Function fGetAllSubFunctionsOfAModule(vbComp As VBIDE.VBComponent) As Dictionary
+Function fGetAllSubFunctionsOfAModule(vbcomp As VBIDE.VBComponent) As Dictionary
     Dim dictOut As Dictionary
     Dim codeM As CodeModule
     Dim lLineNum As Long
@@ -154,7 +154,7 @@ Function fGetAllSubFunctionsOfAModule(vbComp As VBIDE.VBComponent) As Dictionary
     
     Set dictOut = New Dictionary
     
-    Set codeM = vbComp.CodeModule
+    Set codeM = vbcomp.CodeModule
     
     lLineNum = codeM.CountOfDeclarationLines + 1
     
@@ -169,7 +169,7 @@ Function fGetAllSubFunctionsOfAModule(vbComp As VBIDE.VBComponent) As Dictionary
         lEndLine = fFindSubFunctionActualEndLine(codeM, lBodyLine, lBodyLine + lCntLine - (lBodyLine - lStartLine) - 1)
         
         If Not dictOut.Exists(sFunName) Then    'property let, abc, property get abc
-            dictOut.Add sFunName, sScope & DELIMITER & vbComp.Name & DELIMITER & lBodyLine & DELIMITER & lEndLine
+            dictOut.Add sFunName, sScope & DELIMITER & vbcomp.Name & DELIMITER & lBodyLine & DELIMITER & lEndLine
         End If
         
         lLineNum = lLineNum + lCntLine + 1
@@ -766,7 +766,7 @@ End Function
 
 Function fExportSourceCodeToFolder(sFolderExportedTo As String, Optional wb As Workbook)
     Dim vbP As VBIDE.VBProject
-    Dim vbComp As VBIDE.VBComponent
+    Dim vbcomp As VBIDE.VBComponent
     
     If wb Is Nothing Then
         Set vbP = ActiveWorkbook.VBProject
@@ -776,11 +776,11 @@ Function fExportSourceCodeToFolder(sFolderExportedTo As String, Optional wb As W
     
     sFolderExportedTo = fCheckPath(sFolderExportedTo)
     
-    For Each vbComp In vbP.VBComponents
-        vbComp.Export sFolderExportedTo & vbComp.Name & ".bas"
+    For Each vbcomp In vbP.VBComponents
+        vbcomp.Export sFolderExportedTo & vbcomp.Name & ".bas"
     Next
     
-    Set vbComp = Nothing
+    Set vbcomp = Nothing
     Set vbP = Nothing
 End Function
 
@@ -1170,19 +1170,19 @@ Function fImportModuleToWorkbookFromSourceCodeFile(wbTarget As Workbook, sModule
     End If
 End Function
 Function fRemoveDeleteModuleIfExists(wbTarget As Workbook, sModuleName As String)
-    Dim vbComp As VBIDE.VBComponent
+    Dim vbcomp As VBIDE.VBComponent
     Dim sOldName As String
     
     If fModuleExistsInMacro(sModuleName, wbTarget) Then
-        Set vbComp = wbTarget.VBProject.VBComponents(sModuleName)
+        Set vbcomp = wbTarget.VBProject.VBComponents(sModuleName)
         sOldName = Left(sModuleName & Replace(CStr(Timer()), ".", ""), 30)
-        vbComp.Name = sOldName
+        vbcomp.Name = sOldName
 
         'Debug.Print "wbTarget.VBProject.VBComponents.Remove vbComp: " & sModuleName
-        wbTarget.VBProject.VBComponents.Remove vbComp
+        wbTarget.VBProject.VBComponents.Remove vbcomp
         
 '        Call wbTarget.VBProject.VBComponents.Remove(wbTarget.VBProject.VBComponents(sModuleName))
-        Set vbComp = Nothing
+        Set vbcomp = Nothing
         
 '        If Not fModuleExistsInMacro(sModuleName, wbTarget) Then
 '            Debug.Print "" & sModuleName & " was removed."
@@ -1192,7 +1192,7 @@ Function fRemoveDeleteModuleIfExists(wbTarget As Workbook, sModuleName As String
     Else
         Debug.Print "!!! " & sModuleName & " does not exists in the workbook, please check."
     End If
-    Set vbComp = Nothing
+    Set vbcomp = Nothing
 End Function
 
 Function fModuleExistsInMacro(sModuleName As String, Optional wb As Workbook, Optional ByRef outCodeM As CodeModule) As Boolean
@@ -1219,7 +1219,7 @@ End Function
 Function fFilterCommonLibFilesWithMacro(arrLibFiles, wb As Workbook, Optional ByRef dictToIgnore As Dictionary, Optional ByRef sCommonFileForMsg As String) As Dictionary
     Dim dictOut As Dictionary
     Dim vbP As VBIDE.VBProject
-    Dim vbComp As VBIDE.VBComponent
+    Dim vbcomp As VBIDE.VBComponent
     Dim sModType As String
     Dim dictWbModules As Dictionary
     Dim i As Integer
@@ -1230,11 +1230,11 @@ Function fFilterCommonLibFilesWithMacro(arrLibFiles, wb As Workbook, Optional By
     Set dictWbModules = New Dictionary
     sCommonFileForMsg = ""
     
-    For Each vbComp In vbP.VBComponents
-        sModType = fVBEComponentTypeToString(vbComp.Type)
+    For Each vbcomp In vbP.VBComponents
+        sModType = fVBEComponentTypeToString(vbcomp.Type)
         
         If sModType <> "Document" Then
-            dictWbModules.Add UCase(vbComp.Name), ""
+            dictWbModules.Add UCase(vbcomp.Name), ""
         End If
     Next
     
@@ -1260,7 +1260,7 @@ next_file:
     Next
 
     Set dictWbModules = Nothing
-    Set vbComp = Nothing
+    Set vbcomp = Nothing
     Set vbP = Nothing
     
     Set fFilterCommonLibFilesWithMacro = dictOut
@@ -1388,7 +1388,7 @@ End Function
 
 Function fScanSourceCodeToFindUncalledFunctions(Optional wb As Workbook)
     Dim vbP As VBIDE.VBProject
-    Dim vbComp As VBIDE.VBComponent
+    Dim vbcomp As VBIDE.VBComponent
     Dim codeM As VBIDE.CodeModule
     Dim prodKind As VBIDE.vbext_ProcKind
     Dim sModuleUserInput 'As String
@@ -1421,15 +1421,15 @@ Function fScanSourceCodeToFindUncalledFunctions(Optional wb As Workbook)
     Set dictExclude = fReadExcludeModuleFunList(ActiveSheet)
     Set dictIsolated = New Dictionary
     
-    For Each vbComp In vbP.VBComponents
+    For Each vbcomp In vbP.VBComponents
         If Len(sModuleUserInput) > 0 Then
-            If UCase(vbComp.Name) <> UCase(sModuleUserInput) Then GoTo next_module
+            If UCase(vbcomp.Name) <> UCase(sModuleUserInput) Then GoTo next_module
         End If
         
-        Set codm = vbComp.CodeModule
-        sModuleType = fGetComponentTypeToString(vbComp.Type)
+        Set codm = vbcomp.CodeModule
+        sModuleType = fGetComponentTypeToString(vbcomp.Type)
         
-        Set dictFunList = fGetAllSubFunctionsOfAModule(vbComp)
+        Set dictFunList = fGetAllSubFunctionsOfAModule(vbcomp)
         
         For i = 0 To dictFunList.Count - 1
             sSubFunName = dictFunList.Keys(i)

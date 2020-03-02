@@ -1,3 +1,8 @@
+ribbon callback signature:
+https://docs.microsoft.com/en-us/previous-versions/office/developer/office-2007/aa722523(v=office.12)
+https://docs.microsoft.com/en-us/previous-versions/office/developer/office-2010/ee691833(v=office.14)
+
+
 Option Explicit
 'https://www.spreadsheet1.com/how-to-copy-strings-to-clipboard-using-excel-vba.html
 'https://docs.microsoft.com/en-us/office/vba/access/concepts/windows-api/retrieve-information-from-the-clipboard
@@ -154,7 +159,7 @@ End Sub
 Sub ERP_UI_Onload(ribbon As IRibbonUI)
   Set mRibbonObj = ribbon
 
-  fCreateAddNameUpdateNameWhenExists "nmRibbonPointer", ObjPtr(ribbon)
+  fSetName "nmRibbonPointer", ObjPtr(ribbon)
   'Names("nmRibbonPointer").RefersTo = ObjPtr(ribbon)
 
   mRibbonObj.ActivateTab "ERP_2010"
@@ -289,7 +294,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
     Select Case control.id
         Case "btnCalSummaryAmount"
             Select Case sType
-                Case "LABEL":   val = "¼ÆËãÈëÕÊ³öÕÊ½á¹û"
+                Case "LABEL":   val = "è®¡ç®—å…¥å¸å‡ºå¸ç»“æœ"
                 Case "IMAGE":   val = "FunctionWizard"
                 Case "SIZE":        val = "true"    'large=true, normal=false
                 Case "SHOW_IMAGE":  val = "true"
@@ -302,7 +307,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
             End Select
         Case "tbtnShowSummaryAmount"
             Select Case sType
-                Case "LABEL":   val = "ÏÔÊ¾/Òş²Ø" & vbCr & "ÈëÕÊ³öÕÊ»ã×Ü±í"
+                Case "LABEL":   val = "æ˜¾ç¤º/éšè—" & vbCr & "å…¥å¸å‡ºå¸æ±‡æ€»è¡¨"
                 Case "IMAGE":   val = "ChartShowData"
                 Case "SIZE":        val = "true"    'large=true, normal=false
                 Case "SHOW_IMAGE":  val = "true"
@@ -315,7 +320,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
             End Select
         Case "tbtnShowshtBillIn"
             Select Case sType
-                Case "LABEL":   val = "ÏÔÊ¾/Òş²Ø" & vbCr & "ÈëÕÊ±í"
+                Case "LABEL":   val = "æ˜¾ç¤º/éšè—" & vbCr & "å…¥å¸è¡¨"
                 Case "IMAGE":   val = "FileSaveAsExcelXlsx"
                 Case "SIZE":        val = "true"    'large=true, normal=false
                 Case "SHOW_IMAGE":  val = "true"
@@ -328,7 +333,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
             End Select
         Case "tbtnShowshtBillOut"
             Select Case sType
-                Case "LABEL":   val = "ÏÔÊ¾/Òş²Ø" & vbCr & "³öÕÊ±í"
+                Case "LABEL":   val = "æ˜¾ç¤º/éšè—" & vbCr & "å‡ºå¸è¡¨"
                 Case "IMAGE":   val = "FileSaveAsExcelXlsx"
                 Case "SIZE":        val = "true"    'large=true, normal=false
                 Case "SHOW_IMAGE":  val = "true"
@@ -342,7 +347,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
 
         Case "btnSummaryBusinessData"
             Select Case sType
-                Case "LABEL":   val = "»ã×ÜÃ÷Ï¸"
+                Case "LABEL":   val = "æ±‡æ€»æ˜ç»†"
                 Case "IMAGE":   val = "FunctionWizard"
                 Case "SIZE":        val = "true"    'large=true, normal=false
                 Case "SHOW_IMAGE":  val = "true"
@@ -355,7 +360,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
             End Select
         Case "tbtnShowshtBusinessDetails"
             Select Case sType
-                Case "LABEL":   val = "ÏÔÊ¾/Òş²Ø" & vbCr & "Ã÷Ï¸±í"
+                Case "LABEL":   val = "æ˜¾ç¤º/éšè—" & vbCr & "æ˜ç»†è¡¨"
                 Case "IMAGE":   val = "FileSaveAsExcelXlsx"
                 Case "SIZE":        val = "true"    'large=true, normal=false
                 Case "SHOW_IMAGE":  val = "true"
@@ -369,7 +374,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
 
         Case "tbtnShowshtBusinessSumm"
             Select Case sType
-                Case "LABEL":   val = "ÏÔÊ¾/Òş²Ø" & vbCr & "»ã×Ü±í"
+                Case "LABEL":   val = "æ˜¾ç¤º/éšè—" & vbCr & "æ±‡æ€»è¡¨"
                 Case "IMAGE":   val = "FileSaveAsExcelXlsx"
                 Case "SIZE":        val = "true"    'large=true, normal=false
                 Case "SHOW_IMAGE":  val = "true"
@@ -382,7 +387,7 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
             End Select
         Case "btnClearData"
             Select Case sType
-                Case "LABEL":   val = "Çå³ıÃ÷Ï¸±íÖĞÊı¾İ"
+                Case "LABEL":   val = "æ¸…é™¤æ˜ç»†è¡¨ä¸­æ•°æ®"
                 Case "IMAGE":   val = "ReviewRejectChange"
                 Case "SIZE":        val = "true"    'large=true, normal=false
                 Case "SHOW_IMAGE":  val = "true"
@@ -412,17 +417,17 @@ Function fOpenFile(asFileFullPath As String)
     Dim lReturnVal As LongPtr
     Dim msg As String
 
-    Const SW_HIDE = 0&   '{Òş²Ø}
-    Const SW_SHOWNORMAL = 1&   '{ÓÃ×î½üµÄ´óĞ¡ºÍÎ»ÖÃÏÔÊ¾, ¼¤»î}
-    Const SW_SHOWMINIMIZED = 2&   '{×îĞ¡»¯, ¼¤»î}
-    Const SW_SHOWMAXIMIZED = 3&   '{×î´ó»¯, ¼¤»î}
-    Const SW_SHOWNOACTIVATE = 4&   '{ÓÃ×î½üµÄ´óĞ¡ºÍÎ»ÖÃÏÔÊ¾, ²»¼¤»î}
-    Const SW_SHOW = 5&   '{Í¬ SW_SHOWNORMAL}
-    Const SW_MINIMIZE = 6&   '{×îĞ¡»¯, ²»¼¤»î}
-    Const SW_SHOWMINNOACTIVE = 7&   '{Í¬ SW_MINIMIZE}
-    Const SW_SHOWNA = 8&   '{Í¬ SW_SHOWNOACTIVATE}
-    Const SW_RESTORE = 9&   '{Í¬ SW_SHOWNORMAL}
-    Const SW_SHOWDEFAULT = 10&   '{Í¬ SW_SHOWNORMAL}
+    Const SW_HIDE = 0&   '{éšè—}
+    Const SW_SHOWNORMAL = 1&   '{ç”¨æœ€è¿‘çš„å¤§å°å’Œä½ç½®æ˜¾ç¤º, æ¿€æ´»}
+    Const SW_SHOWMINIMIZED = 2&   '{æœ€å°åŒ–, æ¿€æ´»}
+    Const SW_SHOWMAXIMIZED = 3&   '{æœ€å¤§åŒ–, æ¿€æ´»}
+    Const SW_SHOWNOACTIVATE = 4&   '{ç”¨æœ€è¿‘çš„å¤§å°å’Œä½ç½®æ˜¾ç¤º, ä¸æ¿€æ´»}
+    Const SW_SHOW = 5&   '{åŒ SW_SHOWNORMAL}
+    Const SW_MINIMIZE = 6&   '{æœ€å°åŒ–, ä¸æ¿€æ´»}
+    Const SW_SHOWMINNOACTIVE = 7&   '{åŒ SW_MINIMIZE}
+    Const SW_SHOWNA = 8&   '{åŒ SW_SHOWNOACTIVATE}
+    Const SW_RESTORE = 9&   '{åŒ SW_SHOWNORMAL}
+    Const SW_SHOWDEFAULT = 10&   '{åŒ SW_SHOWNORMAL}
 
     Const ERROR_FILE_NOT_FOUND = 2&
     Const ERROR_PATH_NOT_FOUND = 3&
@@ -960,18 +965,20 @@ Function fDeleteFile(sFilePath As String)
     End If
 End Function
 
-Function fArrayRowIsBlankHasNoData(arr, alRow As Long) As Boolean
+Function fArrayRowIsBlankHasNoData(arr, alRow As Long, Optional iByCol As Integer = 0) As Boolean
     Dim bOut As Boolean
     Dim lEachCol As Long
-
+    
+    If iByCol <= 0 Then iByCol = UBound(arr, 2)
+    
     bOut = True
-    For lEachCol = LBound(arr, 2) To UBound(arr, 2)
+    For lEachCol = LBound(arr, 2) To iByCol
         If Len(Trim(CStr(arr(alRow, lEachCol)))) > 0 Then
             bOut = False
             Exit For
         End If
     Next
-
+    
     fArrayRowIsBlankHasNoData = bOut
 End Function
 
@@ -1755,39 +1762,63 @@ Function fDeleteAllFilesFromFolder(sFolder As String, Optional LeaveAllFolder As
     Set aSubFolder = Nothing
 End Function
 
-Function fGetAllFilesUnderFolder(sFolder As String)
-    Dim arrOut()
-    Dim i As Long
+Function fGetAllFilesUnderFolder(asFolder As String, Optional IncludeSubFolders As Boolean = True) As Dictionary
+    Dim dictOut As Dictionary
+    
+    Set dictOut = New Dictionary
+    Call fGetAllFilesUnderFolderRecursive(asFolder, IncludeSubFolders, dictOut)
+    
+    Set fGetAllFilesUnderFolder = dictOut
+    Set dictOut = Nothing
+End Function
 
-    arrOut = Array()
-
-    fGetFSO
-
+Function fClearBorderLineForRange(ByRef rng As Range)
+    rng.Borders(xlDiagonalDown).LineStyle = xlNone
+    rng.Borders(xlDiagonalUp).LineStyle = xlNone
+    rng.Borders(xlEdgeLeft).LineStyle = xlNone
+    rng.Borders(xlEdgeTop).LineStyle = xlNone
+    rng.Borders(xlEdgeBottom).LineStyle = xlNone
+    rng.Borders(xlEdgeRight).LineStyle = xlNone
+    rng.Borders(xlInsideVertical).LineStyle = xlNone
+    rng.Borders(xlInsideHorizontal).LineStyle = xlNone
+End Function
+Function fGetAllFilesUnderFolderRecursive(sFolder As String, IncludeSubFolders As Boolean, ByRef dictAllFiles As Dictionary)
     Dim aFile As File
     Dim oFolder As Folder
+    Dim oSubFolder As Folder
 
+    fGetFSO
+    
     If gFSO.FolderExists(sFolder) Then
         Set oFolder = gFSO.GetFolder(sFolder)
 
-        i = oFolder.Files.Count
-
-        If i > 0 Then
-            ReDim arrOut(1 To i)
-
-            i = 0
-            For Each aFile In gFSO.GetFolder(sFolder).Files
-                i = i + 1
-                arrOut(i) = aFile.Path
-            Next
-        End If
+        For Each aFile In oFolder.Files
+            If aFile.Attributes And 2 Or aFile.Attributes And 4 Or aFile.Attributes And 8 _
+            Or aFile.Attributes And 16 Or aFile.Attributes And 64 Then  '32
+            Else
+            
+                dictAllFiles.Add aFile.Path, oFolder.Path
+            End If
+        Next
+        Set aFile = Nothing
+    End If
+     
+    If IncludeSubFolders Then
+        For Each oSubFolder In oFolder.SubFolders
+            If oSubFolder.Attributes And 16 Then
+                If oSubFolder.Attributes And 2 Then
+                Else
+                    Call fGetAllFilesUnderFolderRecursive(oSubFolder.Path, True, dictAllFiles)
+                End If
+            End If
+        Next
+        Set oSubFolder = Nothing
     End If
 
     Set aFile = Nothing
     Set oFolder = Nothing
-
-    fGetAllFilesUnderFolder = arrOut
-    Erase arrOut
 End Function
+
 
 Function fDeleteOldFilesInFolder(sFolder As String, lDays As Long)
 
@@ -2195,7 +2226,54 @@ Function fGetRangeFromExternalAddress(asExternalAddr As String) As Range
     Set wbOut = Nothing
 End Function
 
-Function fReplaceConvertR1C1ToA1(sR1C1Address As String) As String
+Function fGetRangeFromExternalAddress(asExternalAddr As String) As Range
+    Dim lFileStart As Long
+    Dim lFileEnd As Long
+    Dim lShtEnd As Long
+    Dim sWbName As String
+    Dim sShtName As String
+    Dim sNetAddr As String
+    
+    'If fZero(asExternalAddr) Then fErr "wrong param"
+    asExternalAddr = Trim(asExternalAddr)
+    
+    lFileStart = InStr(asExternalAddr, "[")
+    lFileEnd = InStr(asExternalAddr, "]")
+    lShtEnd = InStr(asExternalAddr, "!")
+    
+    If lFileStart <= 0 Or lShtEnd <= 0 Then
+        fErr "the address passed does not have the excel file name part ot the sheet name part"
+    End If
+    
+    sWbName = Mid(asExternalAddr, lFileStart + 1, lFileEnd - lFileStart - 1)
+    sShtName = Mid(asExternalAddr, lFileEnd + 1, lShtEnd - lFileEnd - 1)
+    sNetAddr = Right(asExternalAddr, Len(asExternalAddr) - lShtEnd)
+    
+    sWbName = Replace(sWbName, "'", "")
+    sShtName = Replace(sShtName, "'", "")
+    sNetAddr = fReplaceConvertR1C1ToA1(sNetAddr)
+    
+'    Dim wbOut As Workbook
+'    'sWbName = Left(sWbName, InStr(sWbName, "." - 1))
+'    Set wbOut = Workbooks(sWbName)
+'
+'    If fExcelFileIsOpen(sWbName, wbOut) Then
+        Set fGetRangeFromExternalAddress = Workbooks(sWbName).Worksheets(sShtName).Range(sNetAddr)
+'    Else
+'        fErr "Excel file is not open, pls check your program."
+'    End If
+'
+'    Set wbOut = Nothing
+End Function
+
+Function fGetRangeFromAddress(asAddr As String) As Range
+    If InStr(1, asAddr, "]") Then
+        fGetRangeFromAddress = fGetRangeFromExternalAddress(asAddr)
+    Else
+        fGetRangeFromAddress = fGetRangeFromInternalAddress(asAddr)
+    End If
+End Function
+Function fReplaceConvertR1C1ToA1_deprecate(sR1C1Address As String) As String
     fGetRegExp
 
     Dim matchColl As VBScript_RegExp_55.MatchCollection
@@ -2684,25 +2762,28 @@ Function fSheetHasDataAfterFilter(sht As Worksheet, Optional alHeaderByRow As Lo
     fSheetHasDataAfterFilter = CBool(lCellCnt > 0)
 End Function
 
-Function fCreateAddNameUpdateNameWhenExists(sName As String, aReferTo, Optional wb As Workbook) As Name
+Function fSetName(sName As String, aReferTo, Optional wb As Workbook) As Name
+'aReferTo:
+'---------------
+'1. a single number or string
+'2. address: "=" & range.Address(external:=True)
     If IsMissing(wb) Or wb Is Nothing Then Set wb = ThisWorkbook
-
+    
     If fNameExists(sName, wb) Then
         wb.Names(sName).RefersTo = aReferTo
     Else
         wb.Names.Add sName, aReferTo
     End If
-
+    
 '    If IsNumeric(sValue) Then
 '        wb.Names.Add Name:=sName, RefersTo:="=" & sValue
 '    Else
 '        wb.Names.Add Name:=sName, RefersTo:="=""" & sValue & """"
 '    End If
-
+    
     'wb.Names(sName).Comment = ""
-    Set fCreateAddNameUpdateNameWhenExists = wb.Names(sName)
+    Set fSetName = wb.Names(sName)
 End Function
-
 Function fRemoveName(sName As String, Optional wb As Workbook)
     If IsMissing(wb) Or wb Is Nothing Then Set wb = ThisWorkbook
 
@@ -3426,7 +3507,7 @@ Sub Sub_FilterBySelectedCells()
 
     Set rngSelected = Selection
     If fIfSelectedMoreThanOneRow(rngSelected) Then
-        fMsgBox "²»ÄÜÑ¡¶àĞĞ£¬Ö»ÄÜÑ¡Ò»ĞĞ¡£"
+        fMsgBox "ä¸èƒ½é€‰å¤šè¡Œï¼Œåªèƒ½é€‰ä¸€è¡Œã€‚"
         End
     End If
 
@@ -3499,7 +3580,7 @@ Sub sub_SortBySelectedCells()
 
     Set rngSelected = Selection
 '    If fIfSelectedMoreThanOneRow(rngSelected) Then
-'        fMsgBox "²»ÄÜÑ¡¶àĞĞ£¬Ö»ÄÜÑ¡Ò»ĞĞ¡£"
+'        fMsgBox "ä¸èƒ½é€‰å¤šè¡Œï¼Œåªèƒ½é€‰ä¸€è¡Œã€‚"
 '        End
 '    End If
 
@@ -3755,18 +3836,23 @@ Function fGetRangeByStartEndPos(shtParam As Worksheet, alStartRow As Long, Optio
     End With
 End Function
 
-Function fReadRangeDatatoArrayByStartEndPos(shtParam As Worksheet, alStartRow As Long, alStartCol As Long, alEndRow As Long, alEndCol As Long) As Variant
-    If alStartRow > alEndRow Then
+Function fReadRangeDatatoArrayByStartEndPos(shtParam As Worksheet, alStartRow As Long, alStartCol As Long, Optional alEndRow As Long = 0, Optional alEndCol As Long = 0) As Variant
+    Dim rg As Range
+    
+    Set rg = fGetRangeByStartEndPos(shtParam, alStartRow, alStartCol, alEndRow, alEndCol)
+    
+    If rg Is Nothing Then
         fReadRangeDatatoArrayByStartEndPos = Array()
     Else
-        fReadRangeDatatoArrayByStartEndPos = fReadRangeDataToArray(fGetRangeByStartEndPos(shtParam, alStartRow, alStartCol, alEndRow, alEndCol))
+        fReadRangeDatatoArrayByStartEndPos = fReadRangeDataToArray(rg)
     End If
+    Set rg = Nothing
 End Function
 
 Function fReadRangeDataToArray(rngParam As Range) As Variant
     Dim arrOut()
 
-    If fRangeIsSingleCell(rngParam) Then
+    If (rngParam.Rows.count = 1 And rngParam.Columns.count = 1) Then
         ReDim arrOut(1 To 1, 1 To 1)
         arrOut(1, 1) = rngParam.Value
     Else
@@ -4270,7 +4356,10 @@ Function fSetValidationListForRange(rngParam As Range, asValueListOrExternalAddr
 'asValueListOrExternalAddr
 ' 1) Formula1:="=$K$5:$K$21"    --> range().address( external:=true)
 ' 2) Formula1:="a,b,c,d,e,f,g"  --> "a, b, c, d, e, f"
-
+    Dim bOrigProtect As Boolean
+    bOrigProtect = rngParam.Parent.ProtectContents
+    If bOrigProtect Then fUnProtectSheet rngParam.Parent
+    
     With rngParam.Validation
         .Delete
         .Add Type:=xlValidateList _
@@ -4280,47 +4369,61 @@ Function fSetValidationListForRange(rngParam As Range, asValueListOrExternalAddr
         .IgnoreBlank = True
         .InCellDropdown = True
         .InputTitle = ""
-        .ErrorTitle = ""
+        .ErrorTitle = "è¾“å…¥é”™è¯¯"
         .InputMessage = ""
-        .ErrorMessage = ""
+        .ErrorMessage = "æ‚¨è¾“å…¥äº†æ— æ•ˆæ•°æ®."
         .IMEMode = xlIMEModeNoControl
         .ShowInput = True
         .ShowError = True
     End With
+    
+    If bOrigProtect Then fProtectSheetAndAllowEdit rngParam.Parent
 End Function
 
+
 Function fSetValidationForDateRange(rngParam As Range)
+    Dim bOrigProtect As Boolean
+    bOrigProtect = rngParam.Parent.ProtectContents
+    If bOrigProtect Then fUnProtectSheet rngParam.Parent
+    
     With rngParam.Validation
         .Delete
         .Add Type:=xlValidateDate, AlertStyle:=xlValidAlertStop, Operator:= _
         xlBetween, Formula1:="1/1/2001", Formula2:="12/31/2099"
         .IgnoreBlank = True
         .InCellDropdown = True
-        .InputTitle = "ÊäÈë´íÎó£¡"
-        .ErrorTitle = "ÊäÈë´íÎó£¡"
+        .InputTitle = "è¾“å…¥é”™è¯¯ï¼"
+        .ErrorTitle = "è¾“å…¥é”™è¯¯ï¼"
         .InputMessage = ""
-        .ErrorMessage = "ÇëÊäÈëÕıÈ·µÄÈÕÆÚ"
+        .ErrorMessage = "è¯·è¾“å…¥æ­£ç¡®çš„æ—¥æœŸ"
         .IMEMode = xlIMEModeNoControl
         .ShowInput = True
         .ShowError = True
     End With
     Range("E6").Select
+    If bOrigProtect Then fProtectSheetAndAllowEdit rngParam.Parent
 End Function
 Function fSetValidationForNumberRange(rngParam As Range, aNumMin As Double, aNumMax As Double)
+    Dim bOrigProtect As Boolean
+    bOrigProtect = rngParam.Parent.ProtectContents
+    If bOrigProtect Then fUnProtectSheet rngParam.Parent
+    
     With rngParam.Validation
         .Delete
         .Add Type:=xlValidateDecimal, AlertStyle:=xlValidAlertStop, Operator _
         :=xlBetween, Formula1:=aNumMin, Formula2:=aNumMax
         .IgnoreBlank = True
         .InCellDropdown = True
-        .InputTitle = "ÊäÈë´íÎó£¡"
-        .ErrorTitle = "ÊäÈë´íÎó£¡"
+        .InputTitle = "è¾“å…¥é”™è¯¯ï¼"
+        .ErrorTitle = "è¾“å…¥é”™è¯¯ï¼"
         .InputMessage = ""
-        .ErrorMessage = "Ö»ÔÊĞíÊäÈë" & aNumMin & "µ½" & aNumMax & "µÄÊıÖµ¡£"
+        .ErrorMessage = "åªå…è®¸è¾“å…¥" & aNumMin & "åˆ°" & aNumMax & "çš„æ•°å€¼ã€‚"
         .IMEMode = xlIMEModeNoControl
         .ShowInput = True
         .ShowError = True
     End With
+    
+    If bOrigProtect Then fProtectSheetAndAllowEdit rngParam.Parent
 End Function
 
 Function fModifyMoveActiveXButtonOnSheet(rngToPlaceTheButton As Range, sBtnTechName As String _
@@ -4542,35 +4645,73 @@ Function fCreateNewWorkbook(ByVal asFileFullPath As String, Optional ByVal asNew
     Set wbOut = Nothing
 End Function
 
+' Function fCopySingleSheet2WorkBook(shtSource As Worksheet, wbCopyTo As Workbook, Optional ByVal asNewSheetName As String = "")
+'     Dim wbFrom As Workbook
+'     Set wbFrom = shtSource.Parent
+
+'     Dim sToShtName As String
+'     sToShtName = IIf(Len(Trim(asNewSheetName)) <= 0, shtSource.Name, asNewSheetName)
+
+'     If wbFrom.FullName = wbCopyTo.FullName Then
+'         If Len(Trim(asNewSheetName)) <= 0 Then
+'             fErr "Copying is withing the same workbook, you must specify a different sheet name by parameter asNewSheetName"
+'         End If
+'         If UCase(shtSource.Name) = UCase(asNewSheetName) Then
+'             fErr "Copying is withing the same workbook, parameter asNewSheetName cannot be same as the source sheet name " & "sheet name: " & asNewSheetName
+'         End If
+'     End If
+
+'     If fSheetExists(sToShtName, , wbCopyTo) Then
+'         fErr "There is already a sheet with the same name in workbook " & wbCopyTo.Name & vbCr & "sheet name: " & sToShtName
+'     End If
+
+'     Dim xlOrig As XlSheetVisibility
+'     xlOrig = shtSource.Visible
+'     shtSource.Visible = xlSheetVisible
+'     shtSource.Copy wbCopyTo.Worksheets(wbCopyTo.Worksheets.Count)
+'     shtSource.Visible = xlOrig
+
+'     wbCopyTo.ActiveSheet.Name = sToShtName
+'     ActiveWindow.DisplayGridlines = False
+
+'     Set wbFrom = Nothing
+' End Function
+
 Function fCopySingleSheet2WorkBook(shtSource As Worksheet, wbCopyTo As Workbook, Optional ByVal asNewSheetName As String = "")
     Dim wbFrom As Workbook
     Set wbFrom = shtSource.Parent
-
+    
     Dim sToShtName As String
-    sToShtName = IIf(Len(Trim(asNewSheetName)) <= 0, shtSource.Name, asNewSheetName)
-
+    sToShtName = IIf(Len(Trim(asNewSheetName)) <= 0, shtSource.name, asNewSheetName)
+    
     If wbFrom.FullName = wbCopyTo.FullName Then
         If Len(Trim(asNewSheetName)) <= 0 Then
             fErr "Copying is withing the same workbook, you must specify a different sheet name by parameter asNewSheetName"
         End If
-        If UCase(shtSource.Name) = UCase(asNewSheetName) Then
+        If UCase(shtSource.name) = UCase(asNewSheetName) Then
             fErr "Copying is withing the same workbook, parameter asNewSheetName cannot be same as the source sheet name " & "sheet name: " & asNewSheetName
         End If
     End If
-
+    
     If fSheetExists(sToShtName, , wbCopyTo) Then
-        fErr "There is already a sheet with the same name in workbook " & wbCopyTo.Name & vbCr & "sheet name: " & sToShtName
+        fErr "There is already a sheet with the same name in workbook " & wbCopyTo.name & vbCr & "sheet name: " & sToShtName
     End If
-
+    
+    Dim shtOriActiveSheet As Worksheet
+    
+    Set shtOriActiveSheet = shtSource.Parent.ActiveSheet
+    
     Dim xlOrig As XlSheetVisibility
     xlOrig = shtSource.Visible
     shtSource.Visible = xlSheetVisible
     shtSource.Copy wbCopyTo.Worksheets(wbCopyTo.Worksheets.Count)
     shtSource.Visible = xlOrig
-
-    wbCopyTo.ActiveSheet.Name = sToShtName
+    
+    shtOriActiveSheet.Activate
+    
+    wbCopyTo.ActiveSheet.name = sToShtName
     ActiveWindow.DisplayGridlines = False
-
+    
     Set wbFrom = Nothing
 End Function
 
@@ -5593,7 +5734,7 @@ End Function
 Function fCRMBCurrency2Dbl(ByVal aValue As String) As Double
     aValue = Trim(aValue)
 
-    If Left(aValue, 1) = "£¤" Then
+    If Left(aValue, 1) = "ï¿¥" Then
         aValue = Right(aValue, Len(aValue) - 1)
         fCRMBCurrency2Dbl = val(aValue)
     Else
@@ -6046,6 +6187,20 @@ Function fSetFormatForOddEvenLineByFixColor(ByRef shtOutput As Worksheet, Option
     Set rgOddLInes = Nothing
 End Function
 
+Function fReplaceConvertR1C1ToA1(sR1C1Address As String) As String
+     Dim iRPos As String
+    Dim iCPos As String
+    Dim iRow As Long
+    Dim iCol As Long
+
+    iRPos = InStr(1, sR1C1Address, "R", vbTextCompare)
+    iCPos = InStr(1, sR1C1Address, "C", vbTextCompare)
+    
+    iRow = Mid(sR1C1Address, iRPos + 1, iCPos - iRPos - 1)
+    iCol = Mid(sR1C1Address, iCPos + 1, Len(sR1C1Address) - iCPos)
+     
+    fReplaceConvertR1C1ToA1 = fNum2Letter(iCol) & iRow
+End Function
 Function fDeleteAllConditionFormatFromSheet(ByRef shtParam As Worksheet)
     shtParam.Cells.FormatConditions.Delete
 End Function
@@ -7900,6 +8055,10 @@ Function fReadTextFileAllLinesToArray(sFileFullPath As String, Optional sLineBre
 exit_fun:
     Close #iFileNum
     If Err.Number <> 0 Then fErr Err.Description
+End Function
+
+Function fAppenToString(ByRef sString, sWhatToAppend As String, Optional asSeparator As String = vbLf)
+    sString = sString & asSeparator & sWhatToAppend
 End Function
 
 Function fAppendBlankLineToTheEndOfTextFile(sFileFullPath As String, Optional sLineBreak As String = vbCrLf)

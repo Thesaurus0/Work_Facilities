@@ -980,12 +980,12 @@ Function fCopyAllItemsToAnotherMacroCloneMacro(wbSource As Workbook, wbTarget As
         End If
     Next
     
-    Dim vbComp As VBComponent
-    For Each vbComp In vbTargetPrj.VBComponents
-        If vbComp.Type = vbext_ct_StdModule _
-        Or vbComp.Type = vbext_ct_ClassModule _
-        Or vbComp.Type = vbext_ct_MSForm Then
-            Call vbTargetPrj.VBComponents.Remove(vbComp)
+    Dim vbcomp As VBComponent
+    For Each vbcomp In vbTargetPrj.VBComponents
+        If vbcomp.Type = vbext_ct_StdModule _
+        Or vbcomp.Type = vbext_ct_ClassModule _
+        Or vbcomp.Type = vbext_ct_MSForm Then
+            Call vbTargetPrj.VBComponents.Remove(vbcomp)
         Else
             '
         End If
@@ -1001,14 +1001,14 @@ Function fCopyAllItemsToAnotherMacroCloneMacro(wbSource As Workbook, wbTarget As
     End If
     MkDir sSourceFolder
     
-    For Each vbComp In vbSourcePrj.VBComponents
-        If vbComp.Type = vbext_ct_StdModule _
-        Or vbComp.Type = vbext_ct_ClassModule _
-        Or vbComp.Type = vbext_ct_MSForm Then
-            vbComp.Export sSourceFolder & "\" & vbComp.Name & ".bas"
+    For Each vbcomp In vbSourcePrj.VBComponents
+        If vbcomp.Type = vbext_ct_StdModule _
+        Or vbcomp.Type = vbext_ct_ClassModule _
+        Or vbcomp.Type = vbext_ct_MSForm Then
+            vbcomp.Export sSourceFolder & "\" & vbcomp.Name & ".bas"
         End If
     Next
-    Set vbComp = Nothing
+    Set vbcomp = Nothing
     '=====================================================
     
     '================ copy all sheets first ==============

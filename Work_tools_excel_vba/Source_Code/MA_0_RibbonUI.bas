@@ -407,6 +407,19 @@ Function fGetControlAttributes(control As IRibbonControl, sType As String, Optio
                 Case "ENABLED":     val = True
                 Case "ACTION":      Call subMain_ListAllSheetsCodeName
             End Select
+        Case "btnListActiveSheetInfo"
+            Select Case sType
+                Case "LABEL":   val = "Display Active Sheet Info"
+                Case "IMAGE":   val = "SmartArtAddBullet"
+                Case "SIZE":        val = "false"    'large=true, normal=false
+                Case "SHOW_IMAGE":  val = "true"
+                Case "SUPERTIP":    val = ""
+                Case "SUPERTIP":    val = ""
+                Case "SCREENTIP":   val = ""
+                
+                Case "ENABLED":     val = True
+                Case "ACTION":      Call subMain_ActiveSheetInfo
+            End Select
         Case "btnListAllFunctionsInLocalFile"
             Select Case sType
                 Case "LABEL":   val = "List All Funs In File Lib"

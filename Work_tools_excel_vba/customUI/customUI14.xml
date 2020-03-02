@@ -31,8 +31,9 @@
 					<button id="btnShowAllVeryHideSheets" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" />
 				</group>
 				<group id="grpListAllSheetName" label="Sheets"> 
-					<button id="btnListAllSheetName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
-					<button id="btnListAllSheetCodeName" getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnListAllSheetName"        getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnListAllSheetCodeName"    getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+					<button id="btnListActiveSheetInfo"     getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
 				</group>
 				<group id="grpGenList" label="Gen List">
 					<button id="btnGenAlphabetList" label="Gen A…XFD" size="normal" imageMso="A" onAction="btnGenAlphabetList_onAction"  />

@@ -340,7 +340,7 @@ Function fGetListAllModulesOfWorkbook(Optional wb As Workbook) As Variant
     Dim arrOut()
     Dim iCnt As Long
     Dim vbProj As VBIDE.VBProject
-    Dim vbComp As VBIDE.VBComponent
+    Dim vbcomp As VBIDE.VBComponent
     
     If wb Is Nothing Then
         Set vbProj = ActiveWorkbook.VBProject
@@ -352,11 +352,11 @@ Function fGetListAllModulesOfWorkbook(Optional wb As Workbook) As Variant
     ReDim arrOut(1 To iCnt, 3)
     
     iCnt = 0
-    For Each vbComp In vbProj.VBComponents
+    For Each vbcomp In vbProj.VBComponents
         iCnt = iCnt + 1
         arrOut(iCnt, 1) = "Modules"
-        arrOut(iCnt, 2) = fVBEComponentTypeToString(vbComp.Type)
-        arrOut(iCnt, 3) = vbComp.Name
+        arrOut(iCnt, 2) = fVBEComponentTypeToString(vbcomp.Type)
+        arrOut(iCnt, 3) = vbcomp.Name
     Next
     
     fGetListAllModulesOfWorkbook = arrOut
@@ -391,7 +391,7 @@ Function fGetListAllSubFunctionsInWorkbook(arrModules(), Optional wb As Workbook
     Dim sMod As String
     Dim lineNo As Long
     Dim vbProj As VBIDE.VBProject
-    Dim vbComp As VBIDE.VBComponent
+    Dim vbcomp As VBIDE.VBComponent
     Dim codeMod As VBIDE.CodeModule
     Dim procKind As VBIDE.vbext_ProcKind
     Dim funcName As String
@@ -408,8 +408,8 @@ Function fGetListAllSubFunctionsInWorkbook(arrModules(), Optional wb As Workbook
     For i = LBound(arrModules, 1) To UBound(arrModules, 1)
         sMod = arrModules(i, 3)
         
-        Set vbComp = vbProj.VBComponents(sMod)
-        Set codeMod = vbComp.CodeModule
+        Set vbcomp = vbProj.VBComponents(sMod)
+        Set codeMod = vbcomp.CodeModule
         
         lineNo = codeMod.CountOfDeclarationLines + 1
         
@@ -930,7 +930,27 @@ Sub subMain_ListAllSheetsCodeName()
     Set shtEach = Nothing
     MsgBox strAll
 End Sub
-
+Sub subMain_ActiveSheetInfo()
+    Dim str As String
+    Dim vbcomp As VBIDE.VBComponent
+    Dim vbprj As VBIDE.VBProject
+    
+    If Workbooks.Count <= 0 Then Exit Sub
+     
+    str = ActiveSheet.CodeName
+    ClipBoard_SetData str
+    MsgBox str, vbInformation
+    
+    Set vbprj = ActiveWorkbook.VBProject
+    
+    Application.VBE.MainWindow.Visible = True
+    Set vbcomp = vbprj.VBComponents(str)
+    vbcomp.Activate
+    vbcomp.CodeModule.CodePane.Show
+    
+    Set vbcomp = Nothing
+    Set vbprj = Nothing
+End Sub
 
 Function fDeleteRemoveDataFormatFromSheetLeaveHeader(ByRef shtParam As Worksheet)
     Dim lMaxRow As Long
