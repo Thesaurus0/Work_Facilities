@@ -39,6 +39,9 @@
 					<button id="btnGenAlphabetList" label="Gen A…XFD" size="normal" imageMso="A" onAction="btnGenAlphabetList_onAction"  />
 					<button id="btnGenNumberList" label="Gen 1…9999" size="normal" imageMso="_1" onAction="btnGenNumberList_onAction"  />
 				</group> 
+				<group id="grpOpenWorkbookByNewExcelInstancet" label="New Excel Instance">
+					<button id="btnOpenWorkbookByNewExcelInstance"     getLabel="Utility_getLabel" getImage="Utility_getImage" getSize="Utility_getSize" onAction="Utility_onAction" getEnabled="Utility_getEnabled" getShowImage="Utility_getShowImage" getSupertip="Utility_getSupertip" getScreentip="Utility_getScreentip" /> 
+				</group> 
 			</tab>
 			<tab id="tabForDev_20180701" label="Dev Tools">
 				<group id="grpSourceCode" label="Synchronize By Function"> 

@@ -736,7 +736,7 @@ Function fMsgBox(Optional sMsg As String = "", Optional aVbMsgBoxStyle As VbMsgB
     fMsgBox = MsgBox(sMsg, aVbMsgBoxStyle)
 End Function
 
-Function fGetFileParentFolder(asFileFullPath As String) As String
+Function fGetFileParentFolder(ByVal asFileFullPath As String) As String
     fGetFSO
     fGetFileParentFolder = fCheckPath(gFSO.GetParentFolderName(asFileFullPath))
 End Function
@@ -3836,7 +3836,7 @@ Function fGetRangeByStartEndPos(shtParam As Worksheet, alStartRow As Long, Optio
     End With
 End Function
 
-Function fReadRangeDatatoArrayByStartEndPos(shtParam As Worksheet, alStartRow As Long, alStartCol As Long, Optional alEndRow As Long = 0, Optional alEndCol As Long = 0) As Variant
+Function fReadRangeDatatoArrayByStartEndPos(shtParam As Worksheet, alStartRow As Long, Optional alStartCol As Long = 1, Optional alEndRow As Long = 0, Optional alEndCol As Long = 0) As Variant
     Dim rg As Range
     
     Set rg = fGetRangeByStartEndPos(shtParam, alStartRow, alStartCol, alEndRow, alEndCol)
@@ -8453,19 +8453,33 @@ End Function
 
 Function fSelectMultipleFileDialog(Optional asDefaultFilePath As String = "" _
                          , Optional asFileFilters As String = "", Optional asTitle As String = "")
-    'asFileFilters :   "Excel File=*.xlsx;*.xls;*.xls*"
-    'asFileFilters :   "Excel File(*.xlsx),*.xlsx, "Text File(*.txt),*.txt, Visual Basic Files(*.bas;*.txt),*.bas;*.txt "
+    'asFileFilters :   "Excel File(*.xlsx;*.xls;*.xls)|All Files(*.*)"
     Dim fd As FileDialog
     Dim sFilterDesc As String
     Dim sFilterStr As String
     Dim sDefaultFile As String
     Dim arrOut()
+    Dim arrFilters()
+    Dim i As Integer
 
     arrOut = Array()
 
     If Len(Trim(asFileFilters)) > 0 Then
-        sFilterDesc = Trim(Split(asFileFilters, "=")(0))
-        sFilterStr = Trim(Split(asFileFilters, "=")(1))
+        Dim arrTmp
+        Dim arrTmp2
+        Dim sFilter As String
+        
+        arrTmp = Split(asFileFilters, "|")
+        
+        ReDim arrFilters(LBound(arrTmp) To UBound(arrTmp), 1 To 2)
+        
+        For i = LBound(arrTmp) To UBound(arrTmp)
+            sFilter = arrTmp(i)
+            arrTmp2 = Split(sFilter, "(")
+            
+            arrFilters(i, 1) = Trim(arrTmp2(0))
+            arrFilters(i, 2) = Trim(Replace(arrTmp2(1), ")", ""))
+        Next
     End If
 
     If Len(Trim(asDefaultFilePath)) > 0 Then
@@ -8481,17 +8495,20 @@ Function fSelectMultipleFileDialog(Optional asDefaultFilePath As String = "" _
     fd.Title = IIf(Len(asTitle) > 0, asTitle, fd.InitialFileName)
     fd.AllowMultiSelect = True
 
-    If Len(Trim(sFilterStr)) > 0 Then
+    If ArrLen(arrFilters, 1) > 0 Then
         fd.Filters.Clear
-        fd.Filters.Add sFilterDesc, sFilterStr, 1
-        fd.FilterIndex = 1
+    
+        For i = LBound(arrFilters, 1) To UBound(arrFilters, 1)
+            fd.Filters.Add arrFilters(i, 1), arrFilters(i, 2), i + 1
+            fd.FilterIndex = 1
+        Next
+        
         fd.InitialView = msoFileDialogViewDetails
     Else
         If fd.Filters.Count > 0 Then fd.Filters.Delete
     End If
 
     If fd.Show = -1 Then
-        Dim i As Integer
         ReDim arrOut(1 To fd.SelectedItems.Count)
 
         For i = 1 To fd.SelectedItems.Count
@@ -8964,6 +8981,74 @@ Function fPasteAppendSimpleDictionaryToSheet(dict As Dictionary, sht As Workshee
     Erase arr
 End Function
 
+Function fSetSysMiscConfig(sSettingItemID As String, sValue As String)
+    Dim asTag As String
+    Dim arrColsName(3)
+    Dim rngToFindIn As Range
+    Dim arrConfigData()
+    Dim arrColsIndex()
+    Dim lConfigStartRow As Long
+    Dim lConfigStartCol As Long
+    Dim lConfigEndRow As Long
+    Dim lConfigHeaderAtRow As Long
+
+    asTag = "[System Misc Settings]"
+    arrColsName(1) = "Setting Item ID"
+    arrColsName(2) = "Value"
+    arrColsName(3) = "Value Type"
+
+    Call fReadConfigBlockToArray(asTag:=asTag, shtParam:=shtSysConf _
+                                , arrColsName:=arrColsName _
+                                , arrConfigData:=arrConfigData _
+                                , arrColsIndex:=arrColsIndex _
+                                , lConfigStartRow:=lConfigStartRow _
+                                , lConfigStartCol:=lConfigStartCol _
+                                , lConfigEndRow:=lConfigEndRow _
+                                , lOutConfigHeaderAtRow:=lConfigHeaderAtRow _
+                                , abNoDataConfigThenError:=True)
+
+    Call fValidateDuplicateInArray(arrConfigData, 1, False, shtSysConf, lConfigHeaderAtRow, lConfigStartCol, "Setting Item ID")
+
+    Dim lEachRow As Long
+    Dim lActualRow As Long
+    Dim sKey As String
+    Dim sValueType As String
+    Dim bFound As Boolean
+
+    Set dictMiscConfig = New Dictionary
+
+    For lEachRow = LBound(arrConfigData, 1) To UBound(arrConfigData, 1)
+        If fArrayRowIsBlankHasNoData(arrConfigData, lEachRow) Then GoTo next_row
+
+        lActualRow = lConfigHeaderAtRow + lEachRow
+
+        sKey = Trim(arrConfigData(lEachRow, arrColsIndex(1)))
+        sValueType = Trim(arrConfigData(lEachRow, arrColsIndex(3)))
+        
+        If UCase(sSettingItemID) = UCase(sKey) Then
+            If sValueType = "GET_VALUE" Then
+                If Not dictMiscConfig Is Nothing Then dictMiscConfig(sKey) = sValue
+                shtSysConf.Cells(lConfigStartRow + lEachRow, lConfigStartCol + arrColsIndex(2) - 1).value = sValue
+            ElseIf sValueType = "GET_ADDRESS" Then
+                fErr "GET_ADDRESS cannot be set with value, please check your function fSetSysMiscConfig"
+            Else
+                fErr "the Value Type cannot be blank at row " & lActualRow & vbCr & "sheet:" & shtSysConf.name
+            End If
+            
+            bFound = True
+            Exit For
+        End If
+next_row:
+    Next
+
+    Erase arrConfigData
+    Erase arrColsName
+    Erase arrColsIndex
+    
+    If Not bFound Then
+        fErr "[System Misc Settings] has not such config item: " & sSettingItemID
+    End If
+End Function
 Function fSetConditionFormatForOddEvenLine(ByRef shtParam As Worksheet, Optional lMaxCol As Long = 0 _
                                             , Optional lRowFrom As Long = 2, Optional lRowTo As Long = 0 _
                                             , Optional arrKeyColsNotBlank _
@@ -9318,4 +9403,72 @@ Function fSleep(howlong As Long)
     For i = 0 To howlong
         DoEvents
     Next
+End Function
+Private Sub Workbook_SheetBeforeRightClick(ByVal Sh As Object, ByVal Target As Range, Cancel As Boolean)
+    Call fResetContextMenu
+    Call fAddContextMenu_GotoPage
+End Sub
+
+
+Function fAddContextMenu_GotoPage()
+    If Not ActiveSheet Is shtMenu Then Exit Function
+    
+    Call fAddContextMenu("´´½¨²¢×ªµ½¸ÃÒ³", "menuGotoPage", "subCreateAndGotoPage", 39, 1)
+End Function
+
+Function fResetContextMenu()
+    Dim cmdBar As CommandBar
+    
+    Set cmdBar = Application.CommandBars("Cell")
+    cmdBar.Reset
+    
+    Set cmdBar = Nothing
+End Function
+
+Function fAddContextMenu(sCaption As String, sTag As String, sAction As String, Optional iFaceId As Integer, Optional aiBeforePos As Integer = 1)
+    Dim cmdBar As CommandBar
+    Dim btn As CommandBarButton
+    Dim iBeforePos As InputFile
+    
+    Call fDeleteFromCellMenuRightClickMenu(sCaption, sTag)
+     
+    Set cmdBar = Application.CommandBars("Cell")
+    
+    iBeforePos = IIf(aiBeforePos = 0, cmdBar.Controls.Count, aiBeforePos)
+    
+    Set btn = cmdBar.Controls.Add(Type:=msoControlButton, before:=iBeforePos)
+    btn.Caption = sCaption
+    btn.Tag = sTag
+    btn.OnAction = sAction
+    btn.FaceId = IIf(iFaceId = 0, 801, iFaceId)
+    
+    Set btn = Nothing
+    Set cmdBar = Nothing
+End Function
+
+Function fDeleteFromCellMenuRightClickMenu(Optional sCaption As String = "", Optional sTag As String = "")
+    Dim cmdBar As CommandBar
+    Dim btn As CommandBarControl
+     
+    Set cmdBar = Application.CommandBars("Cell")
+    
+    For Each btn In cmdBar.Controls
+        If Len(sCaption) > 0 Then
+            If UCase(btn.Caption) = UCase(sCaption) Then
+                btn.Delete
+                GoTo next_menu
+            End If
+        End If
+        
+        If Len(sTag) > 0 Then
+            If UCase(btn.Tag) = UCase(sTag) Then
+                btn.Delete
+                GoTo next_menu
+            End If
+        End If
+next_menu:
+    Next
+    
+    Set btn = Nothing
+    Set cmdBar = Nothing
 End Function
