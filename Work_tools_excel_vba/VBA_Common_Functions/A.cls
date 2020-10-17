@@ -295,13 +295,13 @@ exit_fun:
     GetValidMaxRowOfRange = lOut
 End Function
 
-Function GetArrayMaxValidRowCol(arrParam(), Optional lmaxcol As Long, Optional bReverse As Boolean = True) As Long
+Function GetArrayMaxValidRowCol(arrParam(), Optional lMaxCol As Long, Optional bReverse As Boolean = True) As Long
     Dim lEachRow As Long
     Dim lEachMaxRow As Long
     Dim lMaxRowSaved As Long
     Dim lEachCol As Long
 
-    lmaxcol = 0
+    lMaxCol = 0
     lMaxRowSaved = 0 'UBound(arrParam, 1) - LBound(arrParam, 1) + 1
     
     If bReverse Then
@@ -310,7 +310,7 @@ Function GetArrayMaxValidRowCol(arrParam(), Optional lmaxcol As Long, Optional b
                 If Len(Trim(CStr(arrParam(lEachRow, lEachCol)))) > 0 Then
                     If lEachRow > lMaxRowSaved Then
                         lMaxRowSaved = lEachRow
-                        lmaxcol = lEachCol
+                        lMaxCol = lEachCol
                         GoTo exit_fun
                     End If
                 End If
@@ -322,7 +322,7 @@ Function GetArrayMaxValidRowCol(arrParam(), Optional lmaxcol As Long, Optional b
                 If Len(Trim(CStr(arrParam(lEachRow, lEachCol)))) > 0 Then
                     If lEachRow > lMaxRowSaved Then
                         lMaxRowSaved = lEachRow
-                        lmaxcol = lEachCol
+                        lMaxCol = lEachCol
                         GoTo exit_fun
                     End If
                 End If
@@ -1187,7 +1187,7 @@ Function ValidateDuplicateInArrayForCombineCols(arrParam, arrKeyCols _
         If dict.Exists(sKeyStr) Then
             sPos = Replace(sPos, "ACTUAL_ROW_NO", lActualRow)
             ShowSheet shtAt
-            Application.GoTo shtAt.Cells(lActualRow, arrKeyCols(UBound(arrKeyCols)))
+            Application.Goto shtAt.Cells(lActualRow, arrKeyCols(UBound(arrKeyCols)))
             RaiseErr "Duplicate key was found:" & vbCr & sKeyStr & vbCr & sPos
         Else
             dict.Add sKeyStr, 0
@@ -1321,7 +1321,7 @@ Function ValidateDuplicateInArrayForSingleCol(arrParam, lKeyCol As Long _
                 'sPos = sPos & lActualRow & " / " & sColLetter
                 sPos = Replace(sPos, "ACTUAL_ROW_NO", lActualRow)
                 ShowSheet shtAt
-                Application.GoTo shtAt.Cells(lActualRow, lKeyCol)
+                Application.Goto shtAt.Cells(lActualRow, lKeyCol)
                 RaiseErr "Keys [" & sColLetter & "] is blank!" & sPos
             End If
             
@@ -1332,7 +1332,7 @@ Function ValidateDuplicateInArrayForSingleCol(arrParam, lKeyCol As Long _
             'sPos = sPos & lActualRow & " / " & sColLetter
             sPos = Replace(sPos, "ACTUAL_ROW_NO", lActualRow)
             ShowSheet shtAt
-            Application.GoTo shtAt.Cells(lActualRow, lKeyCol)
+            Application.Goto shtAt.Cells(lActualRow, lKeyCol)
             RaiseErr "Duplicate key [" & sKeyStr & "] was found " & sPos
         Else
             dict.Add sKeyStr, 0
@@ -2469,8 +2469,7 @@ Public Function IsDate(sDateStr As String, Optional sFormat As String = "YYYYMMD
     'fIsDate = IsDate(sYear & "-" & sMonth & "-" & sDay)
     IsDate = CBool(dt > DateSerial(1990, 1, 1))
 End Function
- 
-
+  
 Function CreateAddNameUpdateNameWhenExists(sName As String, aReferTo, Optional wb As Workbook) As Name
     If IsMissing(wb) Or wb Is Nothing Then Set wb = ThisWorkbook
     
@@ -2730,3 +2729,25 @@ Function BackupFile(sOrigFilePath As String, sBackUpFilePath As String, Optional
     Call fso.CopyFile(sOrigFilePath, sBackUpFilePath, True)
 End Function
 
+Function ReadWholeSheetData2Array(shtToRead As Worksheet, Optional alDataFromRow As Long = 2, Optional alMaxCol As Long = 0)
+    Dim lMaxRow As Long
+    Dim lMaxCol As Long
+    Dim arrDataOut()
+    
+    arrDataOut = Array()
+    
+    lMaxRow = GetValidMaxRow(shtToRead)
+    If lMaxRow < alDataFromRow Then GoTo exit_fun
+
+    If alMaxCol > 0 Then
+        lMaxCol = alMaxCol
+    Else
+        lMaxCol = GetValidMaxCol(shtToRead)
+    End If
+
+    arrDataOut = ReadRangeDatatoArrayByStartEndPos(shtToRead, alDataFromRow, 1, lMaxRow, lMaxCol)
+    
+exit_fun:
+    ReadWholeSheetData2Array = arrDataOut
+    Erase arrDataOut
+End Function
