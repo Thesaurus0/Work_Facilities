@@ -20,6 +20,15 @@ Option Base 1
     , ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
 #End If
 
+Enum enParamType
+    None = 0
+    ArrayParam
+    StringParam
+    ArrayButEmpty
+    ArrayButOnlyOneElement
+    ArrayButHasDuplicateElement
+End Enum
+
 Private fso As FileSystemObject
 Private Const BUSINESS_ERROR_NUMBER As Integer = 2000
 
@@ -537,8 +546,8 @@ Function ArrayHasDuplicateElement(ByRef arrParam) As Boolean
     Next
     
 exit_function:
-    ArrayHasDuplicateElement = bOut
     Set dict = Nothing
+    ArrayHasDuplicateElement = bOut
 End Function
 
 Function ArrayIsEmptyOrNoData(ByRef arrParam) As Boolean
@@ -684,13 +693,15 @@ Function DeleteFile(sFilePath As String)
         Kill sFilePath
     End If
 End Function
-
-Function ArrayRowIsBlankHasNoData(arr, alRow As Long) As Boolean
+ 
+Function ArrayRowIsBlankHasNoData(arr, alRow As Long, Optional iTillCol As Integer = 0) As Boolean
     Dim bOut As Boolean
     Dim lEachCol As Long
     
+    If iTillCol <= 0 Then iTillCol = UBound(arr, 2)
+    
     bOut = True
-    For lEachCol = LBound(arr, 2) To UBound(arr, 2)
+    For lEachCol = LBound(arr, 2) To iTillCol
         If Len(Trim(CStr(arr(alRow, lEachCol)))) > 0 Then
             bOut = False
             Exit For
@@ -699,7 +710,9 @@ Function ArrayRowIsBlankHasNoData(arr, alRow As Long) As Boolean
     
     ArrayRowIsBlankHasNoData = bOut
 End Function
-
+Function OneRowOfArrayIsBlank(arr, alRow As Long, Optional iTillCol As Integer = 0) As Boolean
+    OneRowOfArrayIsBlank = ArrayRowIsBlankHasNoData(arr, alRow, iTillCol)
+End Function
 Function GenRandomUniqueString() As String
     GenRandomUniqueString = Format(Now(), "yyyymmddhhMMSS") & Rnd()
 End Function
@@ -792,313 +805,322 @@ Function Nzero(sStr) As Boolean
     Nzero = CBool(Len(Trim(sStr)) > 0)
 End Function
 
-Function ReadArray2DictionaryMultipleKeysWithMultipleColsCombined(arrData, arrKeyCols, arrItemCols _
-                , Optional asKeysDelimiter As String = "" _
-                , Optional asItemsDelimiter As String = "" _
+Private Function GetParamType(arrParam, Optional bThrowError As Boolean = False, Optional sMsgPrefix As String = "", Optional sMsgSuffix As String = "") As enParamType
+    GetParamType = enParamType.None
+    
+    If IsArray(arrParam) Then
+        If ArrayIsEmptyOrNoData(arrParam) Then
+            GetParamType = enParamType.ArrayButEmpty
+            If bThrowError Then RaiseErr sMsgPrefix & " is blank " & IIf(sMsgSuffix = "", "", " passed to " & sMsgSuffix)
+        ElseIf ArrayHasDuplicateElement(arrParam) Then
+            GetParamType = enParamType.ArrayButHasDuplicateElement
+            If bThrowError Then RaiseErr sMsgPrefix & " has duplicate element " & IIf(sMsgSuffix = "", "", " passed to " & sMsgSuffix)
+        ElseIf UBound(arrParam) = LBound(arrParam) Then
+            GetParamType = enParamType.ArrayButOnlyOneElement
+        Else
+            GetParamType = enParamType.ArrayParam
+        End If
+    Else
+        GetParamType = enParamType.StringParam
+        If Len(Trim(CStr(arrParam))) <= 0 Then
+            If bThrowError Then RaiseErr sMsgPrefix & " is blank " & IIf(sMsgSuffix = "", "", " passed to " & sMsgSuffix)
+        End If
+    End If
+End Function
+Private Function JoinOneRowOfArray(arrData(), aiRow As Long, Optional arrCols, Optional paramType As enParamType = enParamType.None, Optional sDelimiter As String = "|") As String
+'===================================================================
+'arrCols:
+'     not provided:   all columns
+'     single number:  only one coumn
+'     aarray(1,2,3):  1, 2, 3
+'===================================================================
+    Dim sOut As String
+    Dim j As Integer
+    
+    If ArrayIsEmpty(arrData) Then GoTo exit_func
+    
+    'Dim paramType As enParamType
+    
+    sOut = ""
+    If IsMissing(arrCols) Then
+        For j = LBound(arrData, 2) To UBound(arrData, 2)
+            sOut = sOut & sDelimiter & Trim(CStr(arrData(aiRow, j)))
+        Next
+    Else
+        If paramType = enParamType.None Then paramType = GetParamType(arrCols, True, "arrCols", "JoinOneRowOfArray")
+        
+        If paramType = StringParam Then
+            sOut = Trim(CStr(arrData(aiRow, arrCols)))
+        ElseIf paramType = ArrayButOnlyOneElement Then
+            sOut = Trim(CStr(arrData(aiRow, arrCols(LBound(arrCols)))))
+        Else
+            For j = LBound(arrCols) To UBound(arrCols)
+                sOut = sOut & sDelimiter & Trim(CStr(arrData(aiRow, arrCols(j))))
+            Next
+        End If
+    End If
+    
+    If Len(Trim(Replace(sOut, sDelimiter, ""))) <= 0 Then sOut = "": GoTo exit_func
+    
+    If Len(sDelimiter) > 0 Then sOut = Right(sOut, Len(sOut) - 1)
+    
+exit_func:
+    JoinOneRowOfArray = sOut
+End Function
+Private Function GetOneRowOfArray2OneDimArray(arrData(), alRow As Long, Optional arrCols, Optional paramType As enParamType = enParamType.None, Optional iLBoundAs0or1 As Integer = 1)
+'===================================================================
+'arrCols:
+'     not provided:   all columns
+'     single number:  only one coumn
+'     aarray(1,2,3):  1, 2, 3
+'===================================================================
+    Dim arrOut()
+    
+    If iLBoundAs0or1 <> 0 And iLBoundAs0or1 <> 1 Then RaiseErr "iLBoundAs0or1 can only be 0 or 1"
+     
+    ReDim arrOut(iLBoundAs0or1 To (UBound(arrData, 2) - LBound(arrData, 2) + 1 + iLBoundAs0or1 - 1))
+    
+    If ArrayIsEmpty(arrData) Then GoTo exit_fun
+     
+    Dim j As Integer
+    Dim iSourceDim As Integer
+    
+    iSourceDim = LBound(arrData, 2)
+    
+    If IsMissing(arrCols) Then
+        For j = LBound(arrData, 2) To UBound(arrData, 2)
+            arrOut(iLBoundAs0or1 + j - iSourceDim) = arrData(alRow, j)
+        Next
+    Else
+        If paramType = enParamType.None Then paramType = GetParamType(arrCols, True, "arrCols", "GetOneRowOfArray2OneDimArray")
+        
+        If paramType = StringParam Then
+            arrOut(iLBoundAs0or1) = arrData(alRow, arrCols)
+        ElseIf paramType = ArrayButOnlyOneElement Then
+            arrOut(iLBoundAs0or1) = arrData(alRow, arrCols(LBound(arrCols)))
+        Else
+            For j = LBound(arrCols) To UBound(arrCols)
+                arrOut(iLBoundAs0or1 + j - iSourceDim) = arrData(alRow, arrCols(j))
+            Next
+        End If
+    End If
+exit_fun:
+    GetOneRowOfArray2OneDimArray = arrOut
+End Function
+
+Function ConvertArray2DictionaryMultipleKeysWithMultipleCols(arrData(), arrKeyCols, arrItemCols _
+                , Optional sheetForMsgBox As Worksheet = Nothing _
                 , Optional IgnoreBlankKeys As Boolean = False _
-                , Optional WhenKeyDuplicateThenError As Boolean = True) As Dictionary
+                , Optional WhenKeyDuplicateThenError As Boolean = True _
+                , Optional asKeysDelimiter As String = "|") As Dictionary
+'==================================================================================================
+'arrKeyCols:     either array or integer
+'
+'arrItemCols:    either array or integer
+'         -1:    only row number
+'          0:    only keys
+'        > 0:    single value
+'      array:    array()
+'item value:     array lbound starts from 1
+'==================================================================================================
     Dim dictOut As Dictionary
+    Dim sht
     
     Set dictOut = New Dictionary
     
     If ArrayIsEmptyOrNoData(arrData) Then GoTo exit_fun
-    If ArrayIsEmptyOrNoData(arrKeyCols) Then RaiseErr "arrKeyCols is empty !"
-    If ArrayIsEmptyOrNoData(arrItemCols) Then RaiseErr "arrItemCols is empty !"
-    If ArrayHasDuplicateElement(arrKeyCols) Then RaiseErr "arrKeyCols has duplicate element"
-    If ArrayHasDuplicateElement(arrItemCols) Then RaiseErr "arrItemCols has duplicate element"
     
-    If InStr(asKeysDelimiter, " ") > 0 Then RaiseErr "asKeysDelimiter cannot be space or contains space"
-    If InStr(asItemsDelimiter, " ") > 0 Then RaiseErr "asItemsDelimiter cannot be space or contains space"
+    Dim keyType As enParamType
+    Dim itemType As enParamType
+    Dim bOnlyKeys As Boolean
+    Dim bOnlyRowNum As Boolean
+    
+    keyType = GetParamType(arrKeyCols, True, "arrKeyCols", "ConvertArray2DictionaryMultipleKeysWithMultipleCols")
+    itemType = GetParamType(arrItemCols, True, "arrItemCols", "ConvertArray2DictionaryMultipleKeysWithMultipleCols")
+    
+    If keyType = StringParam Then
+        If arrKeyCols < 0 Then RaiseErr "arrKeyCols <= 0 to ConvertArray2DictionaryMultipleKeysWithMultipleCols"
+    ElseIf keyType = ArrayButOnlyOneElement Then
+        If arrKeyCols(LBound(arrKeyCols)) < 0 Then RaiseErr "arrKeyCols <= 0 to ConvertArray2DictionaryMultipleKeysWithMultipleCols"
+    End If
+       
+    If itemType = StringParam Then
+        If arrItemCols <= -2 Then RaiseErr "arrItemCols <= -2 to ConvertArray2DictionaryMultipleKeysWithMultipleCols"
+        
+        bOnlyKeys = CBool(arrItemCols = 0)
+        bOnlyRowNum = CBool(arrItemCols = -1)
+    ElseIf itemType = ArrayButOnlyOneElement Then
+        If arrItemCols(LBound(arrItemCols)) <= -2 Then RaiseErr "arrItemCols <= -2 to ConvertArray2DictionaryMultipleKeysWithMultipleCols"
+        
+        bOnlyKeys = CBool(arrItemCols(LBound(arrItemCols)) = 0)
+        bOnlyRowNum = CBool(arrItemCols(LBound(arrItemCols)) = -1)
+    End If
+    
+    Set sht = sheetForMsgBox
     
     Dim i As Long
     Dim j As Integer
     Dim sKeyStr As String
     Dim sItemsValue As String
     For i = LBound(arrData, 1) To UBound(arrData, 1)
-        sKeyStr = ""
-        For j = LBound(arrKeyCols) To UBound(arrKeyCols)
-            sKeyStr = sKeyStr & asKeysDelimiter & Trim(CStr(arrData(i, arrKeyCols(j))))
-        Next
+        sKeyStr = JoinOneRowOfArray(arrData, i, arrKeyCols, keyType, asKeysDelimiter)
+'
+'        If keyType = StringParam Then
+'            sKeyStr = Trim(CStr(arrData(i, arrKeyCols)))
+'        ElseIf keyType = ArrayButOnlyOneElement Then
+'            sKeyStr = Trim(CStr(arrData(i, arrKeyCols(LBound(arrKeyCols)))))
+'        Else
+'            'sKeyStr = JoinOneRowOfArray(arrData, i, arrKeyCols, asKeysDelimiter)
+'            For j = LBound(arrKeyCols) To UBound(arrKeyCols)
+'                sKeyStr = sKeyStr & sDelimiter & Trim(CStr(arrData(i, arrKeyCols(j))))
+'            Next
+'        End If
+'
+'        For j = LBound(arrKeyCols) To UBound(arrKeyCols)
+'            sKeyStr = sKeyStr & asKeysDelimiter & Trim(CStr(arrData(i, arrKeyCols(j))))
+'        Next
         
-        If Zero(Replace(sKeyStr, asKeysDelimiter, "")) Then
-            If Not IgnoreBlankKeys Then RaiseErr "IgnoreBlankKeys is false, but a keystr is blank"
-            GoTo next_row
-        End If
-        
-        If Len(asKeysDelimiter) > 0 Then sKeyStr = Right(sKeyStr, Len(sKeyStr) - Len(asKeysDelimiter))
-        
-        If dictOut.Exists(sKeyStr) Then
-            If WhenKeyDuplicateThenError Then
-                RaiseErr "Duplicate key was found " & vbCr & sKeyStr
-            End If
-            GoTo next_row
-        End If
-        
-        sItemsValue = ""
-        For j = LBound(arrItemCols) To UBound(arrItemCols)
-            sItemsValue = sItemsValue & asItemsDelimiter & Trim(CStr(arrData(i, arrItemCols(j))))
-        Next
-        If Len(asItemsDelimiter) > 0 Then
-            If Len(Replace(sItemsValue, asItemsDelimiter, "")) > 0 Then
-                sItemsValue = Right(sItemsValue, Len(sItemsValue) - Len(asItemsDelimiter))
-            End If
-        End If
-        dictOut.Add sKeyStr, sItemsValue
-next_row:
-    Next
-    
-exit_fun:
-    Set ReadArray2DictionaryMultipleKeysWithMultipleColsCombined = dictOut
-    Set dictOut = Nothing
-End Function
-
-Function ReadArray2DictionaryMultipleKeysWithKeysOnly(arrData, arrKeyCols _
-                , Optional asKeysDelimiter As String = "" _
-                , Optional IgnoreBlankKeys As Boolean = False _
-                , Optional WhenKeyDuplicateThenError As Boolean = True) As Dictionary
-    Dim dictOut As Dictionary
-    
-    Set dictOut = New Dictionary
-    
-    If ArrayIsEmptyOrNoData(arrData) Then GoTo exit_fun
-    If ArrayIsEmptyOrNoData(arrKeyCols) Then RaiseErr "arrKeyCols is empty !"
-    If ArrayHasDuplicateElement(arrKeyCols) Then RaiseErr "arrKeyCols has duplicate element"
-    
-    If InStr(asKeysDelimiter, " ") > 0 Then RaiseErr "asKeysDelimiter cannot be space or contains space"
-    
-    Dim i As Long
-    Dim j As Integer
-    Dim sKeyStr As String
-    For i = LBound(arrData, 1) To UBound(arrData, 1)
-        sKeyStr = ""
-        For j = LBound(arrKeyCols) To UBound(arrKeyCols)
-            sKeyStr = sKeyStr & asKeysDelimiter & Trim(CStr(arrData(i, arrKeyCols(j))))
-        Next
-        
-        If Zero(Replace(sKeyStr, asKeysDelimiter, "")) Then
-            If Not IgnoreBlankKeys Then RaiseErr "IgnoreBlankKeys is false, but a keystr is blank"
-            GoTo next_row
-        End If
-        
-        If Len(asKeysDelimiter) > 0 Then sKeyStr = Right(sKeyStr, Len(sKeyStr) - Len(asKeysDelimiter))
-        
-        If dictOut.Exists(sKeyStr) Then
-            If WhenKeyDuplicateThenError Then
-                RaiseErr "Duplicate key was found " & vbCr & sKeyStr
-            End If
-            GoTo next_row
-        End If
-        
-        dictOut.Add sKeyStr, 1
-next_row:
-    Next
-    
-exit_fun:
-    Set ReadArray2DictionaryMultipleKeysWithKeysOnly = dictOut
-    Set dictOut = Nothing
-End Function
-
-Function ReadArray2DictionaryMultipleKeysWithRowNum(arrData, arrKeyCols _
-                , Optional asKeysDelimiter As String = "" _
-                , Optional IgnoreBlankKeys As Boolean = False _
-                , Optional WhenKeyDuplicateThenError As Boolean = True) As Dictionary
-    Dim dictOut As Dictionary
-    
-    Set dictOut = New Dictionary
-    
-    If ArrayIsEmptyOrNoData(arrData) Then GoTo exit_fun
-    If ArrayIsEmptyOrNoData(arrKeyCols) Then RaiseErr "arrKeyCols is empty !"
-    If ArrayHasDuplicateElement(arrKeyCols) Then RaiseErr "arrKeyCols has duplicate element"
-    
-    If InStr(asKeysDelimiter, " ") > 0 Then RaiseErr "asKeysDelimiter cannot be space or contains space"
-    
-    Dim i As Long
-    Dim j As Integer
-    Dim sKeyStr As String
-    For i = LBound(arrData, 1) To UBound(arrData, 1)
-        sKeyStr = ""
-        For j = LBound(arrKeyCols) To UBound(arrKeyCols)
-            sKeyStr = sKeyStr & asKeysDelimiter & Trim(CStr(arrData(i, arrKeyCols(j))))
-        Next
-        
-        If Zero(Replace(sKeyStr, asKeysDelimiter, "")) Then
-            If Not IgnoreBlankKeys Then RaiseErr "IgnoreBlankKeys is false, but a keystr is blank"
-            GoTo next_row
-        End If
-        
-        If Len(asKeysDelimiter) > 0 Then sKeyStr = Right(sKeyStr, Len(sKeyStr) - Len(asKeysDelimiter))
-        
-        If dictOut.Exists(sKeyStr) Then
-            If WhenKeyDuplicateThenError Then
-                RaiseErr "Duplicate key was found " & vbCr & sKeyStr
-            End If
-            GoTo next_row
-        End If
-        
-        dictOut.Add sKeyStr, i
-next_row:
-    Next
-    
-exit_fun:
-    Set ReadArray2DictionaryMultipleKeysWithRowNum = dictOut
-    Set dictOut = Nothing
-End Function
-Function ReadArray2DictionaryWithMultipleColsCombined(arrData, lKeyCol As Long, arrItemCols _
-                , Optional asDelimiter As String = "" _
-                , Optional IgnoreBlankKeys As Boolean = False _
-                , Optional WhenKeyDuplicateThenError As Boolean = True) As Dictionary
-    Dim dictOut As Dictionary
-    
-    If lKeyCol < 0 Then RaiseErr "lKeyCol < 0 to ReadArray2DictionaryWithMultipleColsCombined"
-    
-    Set dictOut = New Dictionary
-    
-    If ArrayIsEmptyOrNoData(arrData) Then GoTo exit_fun
-    If ArrayIsEmptyOrNoData(arrItemCols) Then RaiseErr "arrItemCols is empty."
-    If ArrayHasDuplicateElement(arrItemCols) Then RaiseErr "arrItemCols has duplicate element."
-    
-    Dim i As Long
-    Dim sKey
-    Dim sValue As String
-    Dim sItemsValue
-    For i = LBound(arrData, 1) To UBound(arrData, 1)
-        If ArrayRowIsBlankHasNoData(arrData, i) Then GoTo next_row
-        
-        sKey = arrData(i, lKeyCol)
-        
-        If Zero(sKey) Then
-            If IgnoreBlankKeys Then GoTo next_row
-            RaiseErr "Key column is blank, but program decides not allow blank, pls contact with IT support."
-        End If
-        
-        If dictOut.Exists(sKey) Then
-            If WhenKeyDuplicateThenError Then
-                'Application.Goto shtAt.Cells(i + 1, lKeyCol)
-                RaiseErr "Duplicate Key was found : " & vbCr & "Key: " & sKey
-            End If
-            GoTo next_row
-        End If
-        
-        sValue = ""
-        Dim j As Integer
-        For j = LBound(arrItemCols) To UBound(arrItemCols)
-            sValue = sValue & asDelimiter & Trim(arrData(i, arrItemCols(j)))
-        Next
-        
-        If Len(asDelimiter) > 0 Then
-            If Len(Replace(sValue, asDelimiter, "")) > 0 Then
-                sItemsValue = Right(sValue, Len(sValue) - Len(asDelimiter))
-            End If
-        End If
-        
-        dictOut.Add sKey, sValue
-next_row:
-    Next
-    
-exit_fun:
-    Set ReadArray2DictionaryWithMultipleColsCombined = dictOut
-    Set dictOut = Nothing
-End Function
-
-Function ReadArray2DictionaryWithSingleCol(arrParam, lKeyCol As Long, lItemCol As Long _
-                            , Optional IgnoreBlankKeys As Boolean = False _
-                            , Optional WhenKeyIsDuplicateError As Boolean = True) As Dictionary
-'==========================================================================
-'lItemCol
-'         -1: the item is row number
-'          0: get key only, not care the item value, 0 as default
-'         >0: the item is specified column
-'==========================================================================
-    If lItemCol <= 0 Then RaiseErr "lItemCol cannot be less than 0 in ReadArray2DictionaryWithSingleCol"
-    Set ReadArray2DictionaryWithSingleCol = ReadArray2Dictionary(arrParam, lKeyCol, lItemCol, IgnoreBlankKeys, WhenKeyIsDuplicateError)
-End Function
-Function ReadArray2DictionaryWithRowNum(arrParam, lKeyCol As Long _
-                            , Optional IgnoreBlankKeys As Boolean = False _
-                            , Optional WhenKeyIsDuplicateError As Boolean = True) As Dictionary
-'==========================================================================
-'lItemCol
-'         -1: the item is row number
-'          0: get key only, not care the item value, 0 as default
-'         >0: the item is specified column
-'==========================================================================
-    Set ReadArray2DictionaryWithRowNum = ReadArray2Dictionary(arrParam, lKeyCol, -1, IgnoreBlankKeys, WhenKeyIsDuplicateError)
-End Function
-Function ReadArray2DictionaryOnlyKeys(arrParam, lKeyCol As Long _
-                            , Optional IgnoreBlankKeys As Boolean = False _
-                            , Optional WhenKeyIsDuplicateError As Boolean = True) As Dictionary
-'==========================================================================
-'lItemCol
-'         -1: the item is row number
-'          0: get key only, not care the item value, 0 as default
-'         >0: the item is specified column
-'==========================================================================
-    Set ReadArray2DictionaryOnlyKeys = ReadArray2Dictionary(arrParam, lKeyCol, 0, IgnoreBlankKeys, WhenKeyIsDuplicateError)
-End Function
-
-Private Function ReadArray2Dictionary(arrParam, lKeyCol As Long _
-                            , Optional lItemCol As Long = 0 _
-                            , Optional IgnoreBlankKeys As Boolean = False _
-                            , Optional WhenKeyIsDuplicateError As Boolean = True) As Dictionary
-'==========================================================================
-'lItemCol
-'         -1: the item is row number
-'          0: get key only, not care the item value, 0 as default
-'         >0: the item is specified column
-'==========================================================================
-    If lItemCol < -1 Or lKeyCol <= 0 Then RaiseErr "wrong param"
-    
-    Dim dictOut As Dictionary
-    
-    Set dictOut = New Dictionary
-    If ArrayIsEmptyOrNoData(arrParam) Then GoTo exit_fun
-    
-    Dim bGetKeyOnly As Boolean
-    Dim bGetRowNo As Boolean
-    
-    bGetKeyOnly = (lItemCol = 0)
-    bGetRowNo = (lItemCol = -1)
-    
-    Dim i As Long
-    Dim sKey As String
-    Dim sValue As String
-    
-    For i = LBound(arrParam, 1) To UBound(arrParam, 1)
-        If ArrayRowIsBlankHasNoData(arrParam, i) Then GoTo next_row
-        
-        sKey = Trim(arrParam(i, lKeyCol))
-        
-        If Len(sKey) <= 0 Then
+        If Len(sKeyStr) <= 0 Then
             If Not IgnoreBlankKeys Then
-                RaiseErr "Key col is blank, but you specified IgnoreBlankKeys = false" & vbCr & lKeyCol
-            Else
-                GoTo next_row
+                If Not OneRowOfArrayIsBlank(arrData, i) Then RaiseErr "Key columns is blank at row " & (sht.headerbyrow) & " in sheet [" & sheetForMsgBox.Name & "]"
             End If
+            
+            GoTo next_row
         End If
         
-        If dictOut.Exists(sKey) Then
-            If WhenKeyIsDuplicateError Then
-                RaiseErr "duplicate key was found:, but you specified WhenKeyIsDuplicateError = false" & vbCr & lKeyCol & vbCr & sKey
-            Else
-                GoTo next_row
+        If dictOut.Exists(sKeyStr) Then
+            If WhenKeyDuplicateThenError Then
+                ActivateSheet sheetForMsgBox
+                RaiseErr "Duplicate key was found at row " & (sht.headerbyrow) & " in sheet [" & sheetForMsgBox.Name & "]" & vbCr & sKeyStr
             End If
+            GoTo next_row
         End If
         
-        If bGetRowNo Then
-            dictOut.Add sKey, i
+        If bOnlyRowNum Then
+            dictOut.Add sKeyStr, i
         Else
-            If bGetKeyOnly Then
-                dictOut.Add sKey, 0
+            If bOnlyKeys Then
+                dictOut.Add sKeyStr, i
             Else
-                dictOut.Add sKey, arrParam(i, lItemCol)
+                If itemType = StringParam Then
+                    dictOut.Add sKeyStr, arrData(i, arrItemCols)
+                ElseIf itemType = ArrayButOnlyOneElement Then
+                    dictOut.Add sKeyStr, arrData(i, arrItemCols(LBound(arrItemCols)))
+                Else
+                    dictOut.Add sKeyStr, GetOneRowOfArray2OneDimArray(arrData, i, 1)
+                End If
             End If
         End If
 next_row:
     Next
     
 exit_fun:
-    Set ReadArray2Dictionary = dictOut
+    Set ConvertArray2DictionaryMultipleKeysWithMultipleCols = dictOut
     Set dictOut = Nothing
 End Function
+
+Function ConvertArray2DictionaryWithRowNum(arrData(), arrKeyCols _
+                , Optional sheetForMsgBox As Worksheet = Nothing _
+                , Optional IgnoreBlankKeys As Boolean = False _
+                , Optional WhenKeyDuplicateThenError As Boolean = True _
+                , Optional asKeysDelimiter As String = "|") As Dictionary
+'==========================================================================
+'lItemCol
+'         -1: the item is row number
+'          0: get key only, not care the item value, 0 as default
+'         >0: the item is specified column
+'==========================================================================
+    Set ConvertArray2DictionaryWithRowNum = ConvertArray2DictionaryMultipleKeysWithMultipleCols(arrData, arrKeyCols, -1 _
+                , sheetForMsgBox, IgnoreBlankKeys, WhenKeyDuplicateThenError, asKeysDelimiter)
+End Function
+Function ConvertArray2DictionaryWithKeysOnly(arrData(), arrKeyCols _
+                , Optional sheetForMsgBox As Worksheet = Nothing _
+                , Optional IgnoreBlankKeys As Boolean = False _
+                , Optional WhenKeyDuplicateThenError As Boolean = True _
+                , Optional asKeysDelimiter As String = "|") As Dictionary
+    Set ConvertArray2DictionaryWithKeysOnly = ConvertArray2DictionaryMultipleKeysWithMultipleCols(arrData, arrKeyCols, 0 _
+                , sheetForMsgBox, IgnoreBlankKeys, WhenKeyDuplicateThenError, asKeysDelimiter)
+End Function
+  
+Function ConvertArray2DictionaryWithSingleCol(arrData(), iKeyCol, iItemCol _
+                , Optional sheetForMsgBox As Worksheet = Nothing _
+                , Optional IgnoreBlankKeys As Boolean = False _
+                , Optional WhenKeyDuplicateThenError As Boolean = True _
+                , Optional asKeysDelimiter As String = "|") As Dictionary
+'==========================================================================
+'lItemCol
+'         -1: the item is row number
+'          0: get key only, not care the item value, 0 as default
+'         >0: the item is specified column
+'==========================================================================
+    Set ConvertArray2DictionaryWithSingleCol = ConvertArray2DictionaryMultipleKeysWithMultipleCols(arrData, iKeyCol, iItemCol _
+                , sheetForMsgBox, IgnoreBlankKeys, WhenKeyDuplicateThenError, asKeysDelimiter)
+End Function
+ 
+'Private Function ReadArray2Dictionary(arrParam, lKeyCol As Long _
+'                            , Optional lItemCol As Long = 0 _
+'                            , Optional IgnoreBlankKeys As Boolean = False _
+'                            , Optional WhenKeyIsDuplicateError As Boolean = True) As Dictionary
+''==========================================================================
+''lItemCol
+''         -1: the item is row number
+''          0: get key only, not care the item value, 0 as default
+''         >0: the item is specified column
+''==========================================================================
+'    If lItemCol < -1 Or lKeyCol <= 0 Then RaiseErr "wrong param"
+'
+'    Dim dictOut As Dictionary
+'
+'    Set dictOut = New Dictionary
+'    If ArrayIsEmptyOrNoData(arrParam) Then GoTo exit_fun
+'
+'    Dim bGetKeyOnly As Boolean
+'    Dim bGetRowNo As Boolean
+'
+'    bGetKeyOnly = (lItemCol = 0)
+'    bGetRowNo = (lItemCol = -1)
+'
+'    Dim i As Long
+'    Dim sKey As String
+'    Dim sValue As String
+'
+'    For i = LBound(arrParam, 1) To UBound(arrParam, 1)
+'        If ArrayRowIsBlankHasNoData(arrParam, i) Then GoTo next_row
+'
+'        sKey = Trim(arrParam(i, lKeyCol))
+'
+'        If Len(sKey) <= 0 Then
+'            If Not IgnoreBlankKeys Then
+'                RaiseErr "Key col is blank, but you specified IgnoreBlankKeys = false" & vbCr & lKeyCol
+'            Else
+'                GoTo next_row
+'            End If
+'        End If
+'
+'        If dictOut.Exists(sKey) Then
+'            If WhenKeyIsDuplicateError Then
+'                RaiseErr "duplicate key was found:, but you specified WhenKeyIsDuplicateError = false" & vbCr & lKeyCol & vbCr & sKey
+'            Else
+'                GoTo next_row
+'            End If
+'        End If
+'
+'        If bGetRowNo Then
+'            dictOut.Add sKey, i
+'        Else
+'            If bGetKeyOnly Then
+'                dictOut.Add sKey, 0
+'            Else
+'                dictOut.Add sKey, arrParam(i, lItemCol)
+'            End If
+'        End If
+'next_row:
+'    Next
+'
+'exit_fun:
+'    Set ReadArray2Dictionary = dictOut
+'    Set dictOut = Nothing
+'End Function
 
 Function ValidateDuplicateInArray(arrParam, arrKeyColsOrSingle _
                         , Optional bAllowBlank As Boolean = False _
@@ -2645,6 +2667,22 @@ Function ShowSheet(ByRef sht As Worksheet)
     sht.Activate
 End Function
 
+Function ActivateSheet(ByRef sht As Worksheet)
+    Dim bEnableEventsOrig As Boolean
+    Dim bDisplayAlertsOrig As Boolean
+      
+    bEnableEventsOrig = Application.EnableEvents
+    bDisplayAlertsOrig = Application.DisplayAlerts
+    
+    Application.EnableEvents = False
+    Application.DisplayAlerts = False
+    
+    sht.Visible = xlSheetVisible
+    sht.Activate
+    
+    Application.EnableEvents = bEnableEventsOrig
+    Application.DisplayAlerts = bDisplayAlertsOrig
+End Function
 Function SheetExists(asShtName As String, Optional ByRef shtOut As Worksheet, Optional wb As Workbook) As Boolean
     Dim sht As Worksheet
     Dim bOut As Boolean
