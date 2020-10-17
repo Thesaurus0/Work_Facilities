@@ -14,7 +14,7 @@
             "command": "echo \"${selectedText}\" | sed -r -f \"H:/Work_Facilities/vscode/Sed_format_headers_of_http_request.sed\"",  
             "args": [],
             "presentation": {
-                "echo": true,
+                "echo": false,
                 "reveal": "always",
                 "focus": true,
                 "panel": "new",
