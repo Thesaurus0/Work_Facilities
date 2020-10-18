@@ -29,12 +29,21 @@ Enum enParamType
     ArrayButHasDuplicateElement
 End Enum
 
+Dim dblStartTime As Double
 Private fso As FileSystemObject
 Private Const BUSINESS_ERROR_NUMBER As Integer = 2000
 
 Private Sub Class_Terminate()
     Set fso = Nothing
 End Sub
+ 
+Function StartTimer()
+    dblStartTime = Timer
+End Function
+Function HowLong(Optional ByVal asPrefix As String = "") As Single
+    HowLong = Timer - dblStartTime
+    Debug.Print IIf(Len(asPrefix) > 0, asPrefix & vbTab, "") & Format(HowLong, "0000.00000000")
+End Function
 
 Function OpenFile(asFileFullPath As String)
     Dim lReturnVal As LongPtr
@@ -101,208 +110,269 @@ Function OpenFile(asFileFullPath As String)
     End If
 End Function
 
-Public Function GetValidMaxRow(shtParam As Worksheet, Optional abCountInMergedCell As Boolean = False) As Long
+Public Function GetMaxRow(shtParam As Worksheet, Optional abCountInMergedCell As Boolean = False) As Long
     Dim lExcelMaxRow As Long
     Dim lUsedMaxRow As Long
     Dim lUsedMaxCol As Long
-    
+
+    Dim lEachCol As Long
+    Dim lMaxRow As Long
+    Dim lEachValidMaxRow As Long
+     
+'    If abCountInMergedCell Then
+'       abCountInMergedCell = (Not Sheet1.Cells.Find(what:="*", LookIn:=xlValues, SearchOrder:=xlByRows, SearchDirection:=xlPrevious _
+'                                                 , searchformat:=True, MatchCase:=False, matchbyte:=False) Is Nothing)
+'    End If
+      
     lExcelMaxRow = shtParam.Rows.Count
     lUsedMaxRow = shtParam.UsedRange.row + shtParam.UsedRange.Rows.Count - 1
     lUsedMaxCol = shtParam.UsedRange.Column + shtParam.UsedRange.Columns.Count - 1
-    
+ 
+    lMaxRow = 0
     If lUsedMaxRow = 1 Then
-        If WorksheetFunction.CountA(shtParam.Range(shtParam.Cells(1, 1), shtParam.Cells(1, lUsedMaxCol))) <= 0 Then
-            GetValidMaxRow = 0
-            Exit Function
-        End If
-    End If
-    
-    Dim lEachCol As Long
-    Dim lValidMaxRowSaved As Long
-    Dim lEachValidMaxRow As Long
-    
-    lValidMaxRowSaved = 0
-    
-    For lEachCol = 1 To lUsedMaxCol
-        lEachValidMaxRow = shtParam.Cells(lExcelMaxRow, lEachCol).End(xlUp).row
-        
-        If lEachValidMaxRow >= lUsedMaxRow Then
-            GetValidMaxRow = lEachValidMaxRow
-            Exit Function
-        End If
-        
-        If abCountInMergedCell Then
-            If shtParam.Cells(lEachValidMaxRow, lEachCol).MergeCells Then
-                lEachValidMaxRow = shtParam.Cells(lEachValidMaxRow, lEachCol).MergeArea.row _
-                                 + shtParam.Cells(lEachValidMaxRow, lEachCol).MergeArea.Rows.Count - 1
+        lMaxRow = 1
+        GoTo final_check_blank
+    Else
+        For lEachCol = 1 To lUsedMaxCol
+            lEachValidMaxRow = shtParam.Cells(lExcelMaxRow, lEachCol).End(xlUp).row
+     
+            If lEachValidMaxRow >= lUsedMaxRow Then GoTo final_check_blank
+            
+            If abCountInMergedCell Then
+                If shtParam.Cells(lEachValidMaxRow, lEachCol).MergeCells Then
+                    lEachValidMaxRow = shtParam.Cells(lEachValidMaxRow, lEachCol).MergeArea.row _
+                                     + shtParam.Cells(lEachValidMaxRow, lEachCol).MergeArea.Rows.Count - 1
+                End If
             End If
+     
+            If lEachValidMaxRow > lMaxRow Then lMaxRow = lEachValidMaxRow
+            
+            If lMaxRow >= lUsedMaxRow Then GoTo final_check_blank
+        Next
+    End If
+   
+final_check_blank:
+    If lMaxRow = 1 And lUsedMaxCol = 1 Then
+        If Len(Trim(CStr(shtParam.Range("A1")))) <= 0 Then
+            lMaxRow = 0
         End If
+    ElseIf lMaxRow = 1 Then
+'        If WorksheetFunction.CountA(shtParam.Range(shtParam.Cells(1, 1), shtParam.Cells(1, lUsedMaxCol))) <= 0 Then
+'            GetMaxRow = 0
+'            Exit Function
+'        End If
+        Dim arr()
+        Dim i As Integer
+        arr = shtParam.Range(shtParam.Cells(1, 1), shtParam.Cells(lMaxRow, lUsedMaxCol)).Value
         
-        If lEachValidMaxRow > lValidMaxRowSaved Then lValidMaxRowSaved = lEachValidMaxRow
-    Next
-    
-    If lUsedMaxCol = 1 And lValidMaxRowSaved = 1 Then
-        If Len(shtParam.Range("A1")) <= 0 Then
-            GetValidMaxRow = 0
-            Exit Function
-        End If
+        For i = LBound(arr, 2) To UBound(arr, 2)
+            If Len(Trim(arr(1, i))) <= 0 Then
+                lMaxRow = 0
+                Exit For
+            End If
+        Next
+        Erase arr
     End If
     
-    GetValidMaxRow = lValidMaxRowSaved
+    GetMaxRow = lMaxRow
 End Function
+ 
+'Public Function GetMaxRow(shtParam As Worksheet) As Long
+'    Dim lMaxRow As Long
+'    Dim rgLastCell As Range
+'
+'    Set rgLastCell = shtParam.Cells.Find("*", After:=shtParam.Cells(1, 1), SearchOrder:=xlByRows, LookIn:=xlValues, SearchDirection:=xlPrevious)
+'    lMaxRow = rgLastCell.row
+'
+'    If lMaxRow = 1 Then
+'        If WorksheetFunction.CountA(shtParam.Range(shtParam.Cells(1, 1), rgLastCell)) <= 0 Then
+'            lMaxRow = 0
+'        End If
+'    End If
+'
+'    GetMaxRow = lMaxRow
+'End Function
 
-Public Function GetValidMaxCol(shtParam As Worksheet, Optional abCountInMergedCell As Boolean = False) As Long
+Public Function GetMaxCol(shtParam As Worksheet, Optional abCountInMergedCell As Boolean = False) As Long
     Dim lExcelMaxCol As Long
     Dim lUsedMaxRow As Long
     Dim lUsedMaxCol As Long
+
+    Dim lEachRow As Long
+    Dim lMaxCol As Long
+    Dim lEachValidMaxCol As Long
     
     lExcelMaxCol = shtParam.Columns.Count
     lUsedMaxRow = shtParam.UsedRange.row + shtParam.UsedRange.Rows.Count - 1
     lUsedMaxCol = shtParam.UsedRange.Column + shtParam.UsedRange.Columns.Count - 1
-    
-    If lUsedMaxRow = 1 Then
-        If WorksheetFunction.CountA(shtParam.Range(shtParam.Cells(1, 1), shtParam.Cells(lUsedMaxRow, 1))) <= 0 Then
-            GetValidMaxCol = 0
-            Exit Function
-        End If
-    End If
-    
-    Dim lEachRow As Long
-    Dim lValidMaxColSaved As Long
-    Dim lEachValidMaxCol As Long
-    
-    lValidMaxColSaved = 0
-    
-    For lEachRow = 1 To lUsedMaxRow
-        lEachValidMaxCol = shtParam.Cells(lEachRow, lExcelMaxCol).End(xlToLeft).Column
-        
-        If lEachValidMaxCol >= lUsedMaxCol Then
-            GetValidMaxCol = lEachValidMaxCol
-            Exit Function
-        End If
-        
-        If abCountInMergedCell Then
-            If shtParam.Cells(lEachRow, lEachValidMaxCol).MergeCells Then
-                lEachValidMaxCol = shtParam.Cells(lEachRow, lEachValidMaxCol).MergeArea.Column _
-                                 + shtParam.Cells(lEachRow, lEachValidMaxCol).MergeArea.Columns.Count - 1
-            End If
-        End If
-        
-        If lEachValidMaxCol > lValidMaxColSaved Then lValidMaxColSaved = lEachValidMaxCol
-    Next
-    
-    If lUsedMaxRow = 1 And lValidMaxColSaved = 1 Then
-        If Len(shtParam.Range("A1")) <= 0 Then
-            GetValidMaxCol = 0
-            Exit Function
-        End If
-    End If
-    
-    GetValidMaxCol = lValidMaxColSaved
-End Function
 
-Function GetValidMaxRowOfRange(rngParam As Range, Optional abCountInMergedCell As Boolean = False) As Long
-     Dim lOut As Long
-     
-     'single cell
-     If RangeIsSingleCell(rngParam) Then lOut = rngParam.row:               GoTo exit_fun
-     
-     Dim shtParent As Worksheet
-     Set shtParent = rngParam.Parent
-     
-     Dim lExcelMaxRow As Long
-     Dim lExcelMaxCol As Long
-     Dim lShtValidMaxRow As Long
-     Dim lShtValidMaxCol As Long
-     Dim lRangeMaxRow As Long
-     Dim lRangeMaxCol As Long
-     Dim lValidMaxRowSaved As Long
-     Dim lEachValidMaxRow As Long
-     Dim lEachCol As Long
-     
-     lExcelMaxRow = shtParent.Rows.Count
-     lExcelMaxCol = shtParent.Columns.Count
-     lRangeMaxRow = rngParam.row + rngParam.Rows.Count - 1
-     lRangeMaxCol = rngParam.Column + rngParam.Columns.Count - 1
-     
-     lShtValidMaxRow = GetValidMaxRow(shtParent, abCountInMergedCell)
-     If lShtValidMaxRow < rngParam.row Then 'blank, out of usedrange
-        lOut = rngParam.row: GoTo exit_fun
-     End If
-     
-     lShtValidMaxCol = GetValidMaxCol(shtParent, abCountInMergedCell)
-     If lShtValidMaxCol < rngParam.Column Then 'blank, out of usedrange
-        lOut = rngParam.row: GoTo exit_fun
-     End If
-     
-     'whole sheet
-     If rngParam.Rows.Count = lExcelMaxRow And rngParam.Columns.Count = lExcelMaxCol Then
-        lOut = lShtValidMaxRow: GoTo exit_fun
-     End If
-     
-     If lRangeMaxRow > lShtValidMaxRow Then 'shrink row
-        lRangeMaxRow = lShtValidMaxRow
-     End If
-     If lRangeMaxCol > lShtValidMaxCol Then 'shrink col
-        lRangeMaxCol = lShtValidMaxCol
-     End If
-     
-'     'several rows
-'     If rngParam.Columns.Count = lExcelMaxCol Then
-'        lOut = lRangeMaxRow: GoTo exit_fun
-'     End If
-     
-     'several columns
-     If rngParam.Rows.Count = lExcelMaxRow Then
-        lValidMaxRowSaved = 0
-        
-        For lEachCol = rngParam.Column To lRangeMaxCol
-            lEachValidMaxRow = shtParent.Cells(lExcelMaxRow, lEachCol).End(xlUp).row
-            
-            If lEachValidMaxRow >= lShtValidMaxRow Then
-                lOut = lShtValidMaxRow
-                GoTo exit_fun
-            End If
+    lMaxCol = 0
+    If lUsedMaxRow = 1 Then
+        lMaxCol = 1
+        GoTo final_check_blank
+    Else
+        For lEachRow = 1 To lUsedMaxRow
+            lEachValidMaxCol = shtParam.Cells(lEachRow, lExcelMaxCol).End(xlToLeft).Column
+    
+            If lEachValidMaxCol >= lUsedMaxCol Then GoTo final_check_blank
             
             If abCountInMergedCell Then
-                If shtParent.Cells(lEachValidMaxRow, lEachCol).MergeCells Then
-                    lEachValidMaxRow = shtParent.Cells(lEachValidMaxRow, lEachCol).MergeArea.row _
-                                     + shtParent.Cells(lEachValidMaxRow, lEachCol).MergeArea.Rows.Count - 1
+                If shtParam.Cells(lEachRow, lEachValidMaxCol).MergeCells Then
+                    lEachValidMaxCol = shtParam.Cells(lEachRow, lEachValidMaxCol).MergeArea.Column _
+                                     + shtParam.Cells(lEachRow, lEachValidMaxCol).MergeArea.Columns.Count - 1
                 End If
             End If
+    
+            If lEachValidMaxCol > lMaxCol Then lMaxCol = lEachValidMaxCol
             
-            If lEachValidMaxRow > lValidMaxRowSaved Then lValidMaxRowSaved = lEachValidMaxRow
+            If lMaxCol >= lUsedMaxCol Then GoTo final_check_blank
         Next
-        
-        lOut = lValidMaxRowSaved: GoTo exit_fun
     End If
-    
-    Dim arrShrunk()
-    Dim lArrMaxRow As Long
-    Dim lArrMaxCol As Long
-    arrShrunk = ReadRangeDatatoArrayByStartEndPos(shtParent, rngParam.row, rngParam.Column, lRangeMaxRow, lRangeMaxCol)
-    lArrMaxRow = GetArrayMaxValidRowCol(arrShrunk, lArrMaxCol)
-    Erase arrShrunk
-    
-    lArrMaxRow = rngParam.row + lArrMaxRow + IIf(lArrMaxRow > 0, -1, 0)
-    lArrMaxCol = rngParam.Column + lArrMaxCol + IIf(lArrMaxCol > 0, -1, 0)
-    
-    lOut = lArrMaxRow
-    lEachValidMaxRow = 0
-    If abCountInMergedCell Then
-        If shtParent.Cells(lArrMaxRow, lArrMaxCol).MergeCells Then
-        '    If shtParent.Cells(lOut, lEachCol).MergeArea.Rows.Count > 1 Then
-                lEachValidMaxRow = shtParent.Cells(lArrMaxRow, lArrMaxCol).MergeArea.row _
-                                 + shtParent.Cells(lArrMaxRow, lArrMaxCol).MergeArea.Rows.Count - 1
-         '   End If
+  
+final_check_blank:
+    If lMaxCol = 1 And lUsedMaxRow = 1 Then
+        If Len(Trim(CStr(shtParam.Range("A1")))) <= 0 Then
+            lMaxCol = 0
         End If
+    ElseIf lMaxCol = 1 Then
+'        If WorksheetFunction.CountA(shtParam.Range(shtParam.Cells(1, 1), shtParam.Cells(lUsedMaxRow, 1))) <= 0 Then
+'            GetMaxCol = 0
+'            Exit Function
+'        End If
+        Dim arr()
+        Dim i As Integer
+        arr = shtParam.Range(shtParam.Cells(1, 1), shtParam.Cells(lUsedMaxRow, lMaxCol)).Value
         
-        If lEachValidMaxRow > lOut Then lOut = lEachValidMaxRow
+        For i = LBound(arr, 1) To UBound(arr, 1)
+            If Len(Trim(arr(i, 1))) <= 0 Then
+                lMaxCol = 0
+                Exit For
+            End If
+        Next
+        Erase arr
     End If
-
-exit_fun:
-    GetValidMaxRowOfRange = lOut
+    
+    GetMaxCol = lMaxCol
 End Function
+
+'Public Function GetMaxCol(shtParam As Worksheet) As Long
+'    Dim lMaxCol As Long
+'    Dim rgLastCell As Range
+'
+'    Set rgLastCell = shtParam.Cells.Find("*", After:=shtParam.Cells(1, 1), SearchOrder:=xlByColumns, LookAt:=xlPart, LookIn:=xlValues, SearchDirection:=xlPrevious, MatchCase:=False, matchbyte:=False)
+'    lMaxCol = rgLastCell.Column
+'
+'    If lMaxCol = 1 Then
+'        If WorksheetFunction.CountA(shtParam.Range(shtParam.Cells(1, 1), rgLastCell)) <= 0 Then
+'            lMaxCol = 0
+'        End If
+'    End If
+'
+'    GetMaxCol = lMaxCol
+'End Function
+'
+'Function GetMaxRowOfRange(rngParam As Range, Optional abCountInMergedCell As Boolean = False) As Long
+'     Dim lOut As Long
+'
+'     'single cell
+'     If RangeIsSingleCell(rngParam) Then lOut = rngParam.row:               GoTo exit_fun
+'
+'     Dim shtParent As Worksheet
+'     Set shtParent = rngParam.Parent
+'
+'     Dim lExcelMaxRow As Long
+'     Dim lExcelMaxCol As Long
+'     Dim lShtValidMaxRow As Long
+'     Dim lShtValidMaxCol As Long
+'     Dim lRangeMaxRow As Long
+'     Dim lRangeMaxCol As Long
+'     Dim lValidMaxRowSaved As Long
+'     Dim lEachValidMaxRow As Long
+'     Dim lEachCol As Long
+'
+'     lExcelMaxRow = shtParent.Rows.Count
+'     lExcelMaxCol = shtParent.Columns.Count
+'     lRangeMaxRow = rngParam.row + rngParam.Rows.Count - 1
+'     lRangeMaxCol = rngParam.Column + rngParam.Columns.Count - 1
+'
+'     lShtValidMaxRow = GetMaxRow(shtParent, abCountInMergedCell)
+'     If lShtValidMaxRow < rngParam.row Then 'blank, out of usedrange
+'        lOut = rngParam.row: GoTo exit_fun
+'     End If
+'
+'     lShtValidMaxCol = GetMaxCol(shtParent, abCountInMergedCell)
+'     If lShtValidMaxCol < rngParam.Column Then 'blank, out of usedrange
+'        lOut = rngParam.row: GoTo exit_fun
+'     End If
+'
+'     'whole sheet
+'     If rngParam.Rows.Count = lExcelMaxRow And rngParam.Columns.Count = lExcelMaxCol Then
+'        lOut = lShtValidMaxRow: GoTo exit_fun
+'     End If
+'
+'     If lRangeMaxRow > lShtValidMaxRow Then 'shrink row
+'        lRangeMaxRow = lShtValidMaxRow
+'     End If
+'     If lRangeMaxCol > lShtValidMaxCol Then 'shrink col
+'        lRangeMaxCol = lShtValidMaxCol
+'     End If
+'
+''     'several rows
+''     If rngParam.Columns.Count = lExcelMaxCol Then
+''        lOut = lRangeMaxRow: GoTo exit_fun
+''     End If
+'
+'     'several columns
+'     If rngParam.Rows.Count = lExcelMaxRow Then
+'        lValidMaxRowSaved = 0
+'
+'        For lEachCol = rngParam.Column To lRangeMaxCol
+'            lEachValidMaxRow = shtParent.Cells(lExcelMaxRow, lEachCol).End(xlUp).row
+'
+'            If lEachValidMaxRow >= lShtValidMaxRow Then
+'                lOut = lShtValidMaxRow
+'                GoTo exit_fun
+'            End If
+'
+'            If abCountInMergedCell Then
+'                If shtParent.Cells(lEachValidMaxRow, lEachCol).MergeCells Then
+'                    lEachValidMaxRow = shtParent.Cells(lEachValidMaxRow, lEachCol).MergeArea.row _
+'                                     + shtParent.Cells(lEachValidMaxRow, lEachCol).MergeArea.Rows.Count - 1
+'                End If
+'            End If
+'
+'            If lEachValidMaxRow > lValidMaxRowSaved Then lValidMaxRowSaved = lEachValidMaxRow
+'        Next
+'
+'        lOut = lValidMaxRowSaved: GoTo exit_fun
+'    End If
+'
+'    Dim arrShrunk()
+'    Dim lArrMaxRow As Long
+'    Dim lArrMaxCol As Long
+'    arrShrunk = ReadRangeDatatoArrayByStartEndPos(shtParent, rngParam.row, rngParam.Column, lRangeMaxRow, lRangeMaxCol)
+'    lArrMaxRow = GetArrayMaxValidRowCol(arrShrunk, lArrMaxCol)
+'    Erase arrShrunk
+'
+'    lArrMaxRow = rngParam.row + lArrMaxRow + IIf(lArrMaxRow > 0, -1, 0)
+'    lArrMaxCol = rngParam.Column + lArrMaxCol + IIf(lArrMaxCol > 0, -1, 0)
+'
+'    lOut = lArrMaxRow
+'    lEachValidMaxRow = 0
+'    If abCountInMergedCell Then
+'        If shtParent.Cells(lArrMaxRow, lArrMaxCol).MergeCells Then
+'        '    If shtParent.Cells(lOut, lEachCol).MergeArea.Rows.Count > 1 Then
+'                lEachValidMaxRow = shtParent.Cells(lArrMaxRow, lArrMaxCol).MergeArea.row _
+'                                 + shtParent.Cells(lArrMaxRow, lArrMaxCol).MergeArea.Rows.Count - 1
+'         '   End If
+'        End If
+'
+'        If lEachValidMaxRow > lOut Then lOut = lEachValidMaxRow
+'    End If
+'
+'exit_fun:
+'    GetMaxRowOfRange = lOut
+'End Function
 
 Function GetArrayMaxValidRowCol(arrParam(), Optional lMaxCol As Long, Optional bReverse As Boolean = True) As Long
     Dim lEachRow As Long
@@ -1432,7 +1502,7 @@ Function AddNewSheet(asShtName As String, Optional wb As Workbook) As Worksheet
     asShtName = Trim(asShtName)
     If wb Is Nothing Then Set wb = ThisWorkbook
 
-    Set shtOut = wb.Worksheets.Add(after:=wb.Worksheets(wb.Worksheets.Count))
+    Set shtOut = wb.Worksheets.Add(After:=wb.Worksheets(wb.Worksheets.Count))
     shtOut.Name = asShtName
     shtOut.Activate
     ActiveWindow.DisplayGridlines = False
@@ -2358,8 +2428,8 @@ Function TrimArrayElement(ByRef arr)
 End Function
 
 Function GetRangeByStartEndPos(shtParam As Worksheet, alStartRow As Long, Optional alStartCol As Long = 1, Optional alEndRow As Long = 0, Optional alEndCol As Long = 0) As Range
-    If alEndRow <= 0 Then alEndRow = GetValidMaxRow(shtParam)
-    If alEndCol <= 0 Then alEndCol = GetValidMaxCol(shtParam)
+    If alEndRow <= 0 Then alEndRow = GetMaxRow(shtParam)
+    If alEndCol <= 0 Then alEndCol = GetMaxCol(shtParam)
 
     If alEndRow < alStartRow Then Set GetRangeByStartEndPos = Nothing: Exit Function
     If alEndCol < alStartCol Then Set GetRangeByStartEndPos = Nothing: Exit Function
@@ -2614,7 +2684,7 @@ End Function
 Function PasteAppendSimpleDictionaryToSheet(dict As Dictionary, sht As Worksheet, Optional alPasteFromRow As Long = 1, Optional alPasteFromCol As Long = 1)
     If dict.Count <= 0 Then Exit Function
     
-    If alPasteFromRow <= 0 Then alPasteFromRow = GetValidMaxRow(sht) + 1
+    If alPasteFromRow <= 0 Then alPasteFromRow = GetMaxRow(sht) + 1
     
     Dim arr()
     Dim aKey
@@ -2646,7 +2716,7 @@ Function DeleteTrailingBlankRowsFromSheet(sht As Worksheet)
     Dim lUsedMax As Long
     
     lUsedMax = sht.UsedRange.row + sht.UsedRange.Rows.Count - 1
-    lValidMax = GetValidMaxRow(sht)
+    lValidMax = GetMaxRow(sht)
     
     If lUsedMax > lValidMax Then
         sht.Rows(lValidMax + 1 & ":" & lUsedMax).Delete Shift:=xlUp
@@ -2774,13 +2844,13 @@ Function ReadWholeSheetData2Array(shtToRead As Worksheet, Optional alDataFromRow
     
     arrDataOut = Array()
     
-    lMaxRow = GetValidMaxRow(shtToRead)
+    lMaxRow = GetMaxRow(shtToRead)
     If lMaxRow < alDataFromRow Then GoTo exit_fun
 
     If alMaxCol > 0 Then
         lMaxCol = alMaxCol
     Else
-        lMaxCol = GetValidMaxCol(shtToRead)
+        lMaxCol = GetMaxCol(shtToRead)
     End If
 
     arrDataOut = ReadRangeDatatoArrayByStartEndPos(shtToRead, alDataFromRow, 1, lMaxRow, lMaxCol)
@@ -2789,3 +2859,61 @@ exit_fun:
     ReadWholeSheetData2Array = arrDataOut
     Erase arrDataOut
 End Function
+
+Function FindInWorksheet(rngToFindIn As Range, sWhatToFind As String _
+                    , Optional abNotFoundThenError As Boolean = True _
+                    , Optional abAllowMultiple As Boolean = False) As Range
+    If Len(Trim(sWhatToFind)) <= 0 Then RaiseErr "Wrong param sWhatToFind to FindInWorksheet " & sWhatToFind
+
+    Dim rngOut  As Range
+    Dim rngFound As Range
+    Dim lFoundCnt As Long
+    Dim sFirstAddress As String
+
+    Set rngFound = rngToFindIn.Find(what:=sWhatToFind _
+                                    , After:=rngToFindIn.Cells(rngToFindIn.Rows.Count, rngToFindIn.Columns.Count) _
+                                    , LookIn:=xlValues _
+                                    , LookAt:=xlWhole _
+                                    , SearchOrder:=xlByRows _
+                                    , SearchDirection:=xlNext _
+                                    , MatchCase:=False _
+                                    , matchbyte:=False)
+    Set rngOut = rngFound
+
+    If rngFound Is Nothing Then
+        If abNotFoundThenError Then
+            RaiseErr """" & sWhatToFind & """ cannot be found in sheet " & rngToFindIn.Parent.Name & "[" & rngToFindIn.Address & "], pls check your program."
+        Else
+            GoTo exit_function
+        End If
+    Else
+        If Not abAllowMultiple Then
+            sFirstAddress = rngFound.Address
+            lFoundCnt = 1
+
+            Do While True
+                Set rngFound = rngToFindIn.Find(what:=sWhatToFind _
+                                            , After:=rngFound _
+                                            , LookIn:=xlValues _
+                                            , LookAt:=xlWhole _
+                                            , SearchOrder:=xlByRows _
+                                            , SearchDirection:=xlNext _
+                                            , MatchCase:=False _
+                                            , matchbyte:=False)
+                If rngFound Is Nothing Then Exit Do
+                If rngFound.Address = sFirstAddress Then Exit Do
+
+                lFoundCnt = lFoundCnt + 1
+            Loop
+
+            If lFoundCnt > 1 Then
+                RaiseErr lFoundCnt & " copies of """ & sWhatToFind & """ were found in sheet " & rngToFindIn.Parent.Name & ", pls check your program."
+            End If
+        End If
+    End If
+exit_function:
+    Set FindInWorksheet = rngOut
+    Set rngOut = Nothing
+    Set rngFound = Nothing
+End Function
+

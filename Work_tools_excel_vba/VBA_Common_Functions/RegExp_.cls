@@ -24,7 +24,7 @@ Private Function GetRegExp(Optional asPatten As String = "")
         mRegExp.Global = True
     End If
     
-    If A.Nzero(asPatten) Then mRegExp.Pattern = asPatten
+    If a.Nzero(asPatten) Then mRegExp.Pattern = asPatten
 End Function
 
 Function ReplaceDatePattern(ByRef sToReplace As String, aDate As Date) As String
