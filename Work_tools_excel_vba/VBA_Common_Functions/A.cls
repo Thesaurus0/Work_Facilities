@@ -937,7 +937,7 @@ Private Function JoinOneRowOfArray(arrData(), aiRow As Long, Optional arrCols, O
 exit_func:
     JoinOneRowOfArray = sOut
 End Function
-Private Function GetOneRowOfArray2OneDimArray(arrData(), alRow As Long, Optional arrCols, Optional paramType As enParamType = enParamType.None, Optional iLBoundAs0or1 As Integer = 1)
+Function CopyOneRowOfArray2OneDimArray(arrData(), alRow As Long, Optional arrCols, Optional paramType As enParamType = enParamType.None, Optional iLBoundAs0or1 As Integer = 1)
 '===================================================================
 'arrCols:
 '     not provided:   all columns
@@ -948,34 +948,38 @@ Private Function GetOneRowOfArray2OneDimArray(arrData(), alRow As Long, Optional
     
     If iLBoundAs0or1 <> 0 And iLBoundAs0or1 <> 1 Then RaiseErr "iLBoundAs0or1 can only be 0 or 1"
      
-    ReDim arrOut(iLBoundAs0or1 To (UBound(arrData, 2) - LBound(arrData, 2) + 1 + iLBoundAs0or1 - 1))
     
     If ArrayIsEmpty(arrData) Then GoTo exit_fun
      
     Dim j As Integer
     Dim iSourceDim As Integer
-    
-    iSourceDim = LBound(arrData, 2)
-    
+     
     If IsMissing(arrCols) Then
+        iSourceDim = LBound(arrData, 2)
+        'ReDim arrOut(iLBoundAs0or1 To (UBound(arrData, 2) - LBound(arrData, 2) + 1 + iLBoundAs0or1 - 1))
+        ReDim arrOut(iLBoundAs0or1 To (UBound(arrData, 2) + iLBoundAs0or1 - iSourceDim))
+    
         For j = LBound(arrData, 2) To UBound(arrData, 2)
             arrOut(iLBoundAs0or1 + j - iSourceDim) = arrData(alRow, j)
         Next
     Else
-        If paramType = enParamType.None Then paramType = GetParamType(arrCols, True, "arrCols", "GetOneRowOfArray2OneDimArray")
+        If paramType = enParamType.None Then paramType = GetParamType(arrCols, True, "arrCols", "CopyOneRowOfArray2OneDimArray")
         
         If paramType = StringParam Then
             arrOut(iLBoundAs0or1) = arrData(alRow, arrCols)
         ElseIf paramType = ArrayButOnlyOneElement Then
             arrOut(iLBoundAs0or1) = arrData(alRow, arrCols(LBound(arrCols)))
         Else
+            iSourceDim = LBound(arrCols)
+            ReDim arrOut(iLBoundAs0or1 To (UBound(arrCols) + iLBoundAs0or1 - iSourceDim))
+        
             For j = LBound(arrCols) To UBound(arrCols)
                 arrOut(iLBoundAs0or1 + j - iSourceDim) = arrData(alRow, arrCols(j))
             Next
         End If
     End If
 exit_fun:
-    GetOneRowOfArray2OneDimArray = arrOut
+    CopyOneRowOfArray2OneDimArray = arrOut
 End Function
 
 Function ConvertArray2DictionaryMultipleKeysWithMultipleCols(arrData(), arrKeyCols, arrItemCols _
@@ -1077,7 +1081,7 @@ Function ConvertArray2DictionaryMultipleKeysWithMultipleCols(arrData(), arrKeyCo
                 ElseIf itemType = ArrayButOnlyOneElement Then
                     dictOut.Add sKeyStr, arrData(i, arrItemCols(LBound(arrItemCols)))
                 Else
-                    dictOut.Add sKeyStr, GetOneRowOfArray2OneDimArray(arrData, i, 1)
+                    dictOut.Add sKeyStr, CopyOneRowOfArray2OneDimArray(arrData, i, 1)
                 End If
             End If
         End If
@@ -2916,4 +2920,5 @@ exit_function:
     Set rngOut = Nothing
     Set rngFound = Nothing
 End Function
+
 
